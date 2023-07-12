@@ -2,5 +2,7 @@
 name = "trikz"
 version = "0.0.1"
 edition = "2021"
+license = "MIT"
+license-file = "LICENSE-MIT"
 
 [dependencies]
