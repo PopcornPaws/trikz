@@ -9,12 +9,3 @@ pub struct Circle {
 pub struct Attributes {
     radius: Scalar,
 }
-
-impl Rectangle {
-    pub fn new(attributes: Attributes) -> Self {
-        Self {
-            attributes,
-            origin: Vector2::zeros(),
-        }
-    }
-}

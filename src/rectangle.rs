@@ -1,10 +1,13 @@
 use crate::{Scalar, Vector2};
 
+const WIDTH: &str = "width";
+const HEIGHT: &str = "width";
+const CORNER: &str = "rx";
+
 #[derive(Clone)]
 pub struct Rectangle {
     pub attributes: Attributes,
     pub origin: Vector2,
-    pub style: crate::Style,
 }
 
 #[derive(Clone, Copy)]
@@ -29,3 +32,7 @@ impl Rectangle {
         }
     }
 }
+
+// TODO
+// - impl AnchorT
+// - impl IntoSvgNode
