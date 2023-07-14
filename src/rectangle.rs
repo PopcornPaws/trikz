@@ -1,20 +1,10 @@
 use crate::{Scalar, Vector2};
-
-const WIDTH: &str = "width";
-const HEIGHT: &str = "width";
-const CORNER: &str = "rx";
+use crate::style::Style;
 
 #[derive(Clone)]
 pub struct Rectangle {
     pub attributes: Attributes,
     pub origin: Vector2,
-}
-
-#[derive(Clone, Copy)]
-pub struct Attributes {
-    pub width: Scalar,
-    pub height: Scalar,
-    pub corner_radius: Scalar,
 }
 
 impl Rectangle {
@@ -33,6 +23,53 @@ impl Rectangle {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct Attributes {
+    pub width: Scalar,
+    pub height: Scalar,
+    pub corner_radius: Scalar,
+}
+
+impl Attributes {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn width(self, width: Scalar) -> Self {
+        Self {
+            width,
+            height: self.height,
+            corner_radius: self.corner_radius,
+        }
+    }
+
+    pub fn height(self, height: Scalar) -> Self {
+        Self {
+            width: self.width,
+            height,
+            corner_radius: self.corner_radius,
+        }
+    }
+
+    pub fn radius(self, corner_radius: Scalar) -> Self {
+        Self {
+            width: self.width,
+            height: self.height,
+            corner_radius,
+        }
+    }
+}
+
+impl Default for Attributes {
+    fn default() -> Self {
+        Self {
+            width: 5.0,
+            height: 5.0,
+            corner_radius: 0.0,
+        }
+    }
+}
+
+
 // TODO
 // - impl AnchorT
-// - impl IntoSvgNode
