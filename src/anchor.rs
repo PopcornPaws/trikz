@@ -26,10 +26,10 @@ pub trait AnchorT {
         self.northeast() + Vector2::new(xshift, yshift)
     }
     fn below_left(&self, xshift: Scalar, yshift: Scalar) -> Vector2 {
-        self.west() + Vector2::new(-xshift, -yshift)
+        self.southwest() + Vector2::new(-xshift, -yshift)
     }
     fn below_right(&self, xshift: Scalar, yshift: Scalar) -> Vector2 {
-        self.east() + Vector2::new(xshift, -yshift)
+        self.southeast() + Vector2::new(xshift, -yshift)
     }
     fn north(&self) -> Vector2 {
         self.anchor(Anchor::North)

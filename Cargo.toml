@@ -8,5 +8,5 @@ repository = "https://github.com/PopcornPaws/trikz"
 description = "Placeholder for trikz, a tikz-like drawing library"
 
 [dependencies]
-nalgebra = { version = "0.32", default-features = false }
+nalgebra = { version = "0.32", default-features = false, features = ["libm"] }
 svg = "0.13"

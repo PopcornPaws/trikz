@@ -1,4 +1,4 @@
-use crate::anchor::{AnchorT, Anchor};
+use crate::anchor::{Anchor, AnchorT};
 use crate::style::{Stroke, Style};
 use crate::transform::{keys, svg, Transform, WriteAttribute};
 use crate::{Scalar, Vector2};
@@ -160,5 +160,36 @@ mod test {
             svg_attributes.get(keys::STROKE).unwrap().clone().deref(),
             "magenta"
         );
+    }
+
+    #[test]
+    fn anchors() {
+        let rectangle = Rectangle::new().width(8.0).height(6.0);
+        assert_eq!(rectangle.origin(), Vector2::zeros());
+        assert_eq!(rectangle.north(), Vector2::new(0.0, 3.0));
+        assert_eq!(rectangle.northeast(), Vector2::new(4.0, 3.0));
+        assert_eq!(rectangle.east(), Vector2::new(4.0, 0.0));
+        assert_eq!(rectangle.southeast(), Vector2::new(4.0, -3.0));
+        assert_eq!(rectangle.south(), Vector2::new(0.0, -3.0));
+        assert_eq!(rectangle.southwest(), Vector2::new(-4.0, -3.0));
+        assert_eq!(rectangle.west(), Vector2::new(-4.0, 0.0));
+        assert_eq!(rectangle.northwest(), Vector2::new(-4.0, 3.0));
+
+        assert_eq!(rectangle.above(10.0), Vector2::new(0.0, 13.0));
+        assert_eq!(rectangle.below(10.0), Vector2::new(0.0, -13.0));
+        assert_eq!(rectangle.left(10.0), Vector2::new(-14.0, 0.0));
+        assert_eq!(rectangle.right(10.0), Vector2::new(14.0, 0.0));
+
+        assert_eq!(rectangle.above_right(5.0, 5.0), Vector2::new(9.0, 8.0));
+        assert_eq!(rectangle.above_left(5.0, 5.0), Vector2::new(-9.0, 8.0));
+        assert_eq!(rectangle.below_left(5.0, 5.0), Vector2::new(-9.0, -8.0));
+        assert_eq!(rectangle.below_right(5.0, 5.0), Vector2::new(9.0, -8.0));
+
+        // sin(angle) = 3.0 / 5.0;
+        // we need it in degrees
+        // we should basically get southeast with these polar coordinates
+        let angle = -(3.0 / 5.0 as Scalar).asin() * 180.0 / crate::PI;
+        let anchor = Anchor::Polar { radius: 5.0, angle };
+        assert!((rectangle.anchor(anchor) - rectangle.southeast()).norm() < 1e-6);
     }
 }

@@ -1,3 +1,7 @@
+#[deny(warnings)]
+#[deny(clippy::all)]
+#[deny(clippy::dbg_macro)]
+
 pub mod anchor;
 pub mod nodes;
 pub mod style;
