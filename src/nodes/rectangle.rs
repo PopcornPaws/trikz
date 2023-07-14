@@ -1,5 +1,6 @@
-use crate::into_svg::{node, IntoSvg, CORNER, HEIGHT, WIDTH, X, Y, STYLE};
-use crate::style::Style;
+use crate::anchor::{AnchorT, Anchor};
+use crate::style::{Stroke, Style};
+use crate::transform::{keys, svg, Transform, WriteAttribute};
 use crate::{Scalar, Vector2};
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -52,16 +53,43 @@ impl Rectangle {
     }
 }
 
-impl IntoSvg for Rectangle {
-    type Output = node::Rectangle;
-    fn into_svg(self, style: &Style) -> Self::Output {
-        node::Rectangle::new()
-            .set(X, self.origin[0])
-            .set(Y, self.origin[1])
-            .set(WIDTH, self.width)
-            .set(HEIGHT, self.height)
-            .set(CORNER, self.corner_radius)
-            .set(STYLE, style.to_string())
+impl Transform for Rectangle {
+    type Output = svg::Rectangle;
+    type StyleType = Stroke;
+    fn into_svg(self, style: &Style<Self::StyleType>) -> Self::Output {
+        let mut output = svg::Rectangle::new()
+            .set(keys::X, self.origin[0])
+            .set(keys::Y, self.origin[1])
+            .set(keys::WIDTH, self.width)
+            .set(keys::HEIGHT, self.height)
+            .set(keys::CORNER, self.corner_radius);
+
+        style.write(output.get_attributes_mut());
+
+        output
+    }
+}
+
+impl AnchorT for Rectangle {
+    fn anchor(&self, anchor: Anchor) -> Vector2 {
+        // positive X is right (east)
+        // positive Y is up (north)
+        match anchor {
+            Anchor::Origin => self.origin,
+            Anchor::North => self.origin + Vector2::new(0.0, self.height / 2.0),
+            Anchor::NorthEast => self.origin + Vector2::new(self.width / 2.0, self.height / 2.0),
+            Anchor::East => self.origin + Vector2::new(self.width / 2.0, 0.0),
+            Anchor::SouthEast => self.origin + Vector2::new(self.width / 2.0, -self.height / 2.0),
+            Anchor::South => self.origin + Vector2::new(0.0, -self.height / 2.0),
+            Anchor::SouthWest => self.origin + Vector2::new(-self.width / 2.0, -self.height / 2.0),
+            Anchor::West => self.origin + Vector2::new(-self.width / 2.0, 0.0),
+            Anchor::NorthWest => self.origin + Vector2::new(-self.width / 2.0, self.height / 2.0),
+            Anchor::Polar { radius, angle } => {
+                let radians = angle * crate::PI / 180.0;
+                let (s, c) = radians.sin_cos();
+                self.origin + Vector2::new(radius * c, radius * s)
+            }
+        }
     }
 }
 
@@ -85,15 +113,22 @@ mod test {
         let svg = rectangle.into_svg(&style);
         let svg_attributes = svg.get_attributes();
 
-        assert_eq!(svg_attributes.get(X).unwrap().clone().deref(), "10");
-        assert_eq!(svg_attributes.get(Y).unwrap().clone().deref(), "20");
-        assert_eq!(svg_attributes.get(WIDTH).unwrap().clone().deref(), "10");
-        assert_eq!(svg_attributes.get(HEIGHT).unwrap().clone().deref(), "100");
-        assert_eq!(svg_attributes.get(CORNER).unwrap().clone().deref(), "4");
+        assert_eq!(svg_attributes.get(keys::X).unwrap().clone().deref(), "10");
+        assert_eq!(svg_attributes.get(keys::Y).unwrap().clone().deref(), "20");
         assert_eq!(
-            svg_attributes.get(STYLE).unwrap().clone().deref(),
-            format!("fill: none; {}", Stroke::default())
+            svg_attributes.get(keys::WIDTH).unwrap().clone().deref(),
+            "10"
         );
+        assert_eq!(
+            svg_attributes.get(keys::HEIGHT).unwrap().clone().deref(),
+            "100"
+        );
+        assert_eq!(
+            svg_attributes.get(keys::CORNER).unwrap().clone().deref(),
+            "4"
+        );
+        assert!(svg_attributes.get(keys::FILL).is_none());
+        assert!(svg_attributes.get(keys::STROKE).is_none());
 
         let rectangle = Rectangle::new();
 
@@ -103,17 +138,27 @@ mod test {
         let svg = rectangle.into_svg(&style);
         let svg_attributes = svg.get_attributes();
 
-        assert_eq!(svg_attributes.get(X).unwrap().clone().deref(), "0");
-        assert_eq!(svg_attributes.get(Y).unwrap().clone().deref(), "0");
-        assert_eq!(svg_attributes.get(WIDTH).unwrap().clone().deref(), "0");
-        assert_eq!(svg_attributes.get(HEIGHT).unwrap().clone().deref(), "0");
-        assert_eq!(svg_attributes.get(CORNER).unwrap().clone().deref(), "0");
+        assert_eq!(svg_attributes.get(keys::X).unwrap().clone().deref(), "0");
+        assert_eq!(svg_attributes.get(keys::Y).unwrap().clone().deref(), "0");
         assert_eq!(
-            svg_attributes.get(STYLE).unwrap().clone().deref(),
-            format!("fill: green; {}", stroke)
+            svg_attributes.get(keys::WIDTH).unwrap().clone().deref(),
+            "0"
+        );
+        assert_eq!(
+            svg_attributes.get(keys::HEIGHT).unwrap().clone().deref(),
+            "0"
+        );
+        assert_eq!(
+            svg_attributes.get(keys::CORNER).unwrap().clone().deref(),
+            "0"
+        );
+        assert_eq!(
+            svg_attributes.get(keys::FILL).unwrap().clone().deref(),
+            "green"
+        );
+        assert_eq!(
+            svg_attributes.get(keys::STROKE).unwrap().clone().deref(),
+            "magenta"
         );
     }
 }
-
-// TODO
-// - impl AnchorT

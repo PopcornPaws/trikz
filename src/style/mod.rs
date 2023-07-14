@@ -1,44 +1,66 @@
 mod color;
+mod font;
 mod stroke;
 
 pub use color::Color;
+pub use font::Font;
 pub use stroke::Stroke;
 
-use std::fmt::{Display, Formatter, Result as FmtResult};
+use crate::transform::{keys, svg, WriteAttribute};
 
-#[derive(Clone, Debug, Default)]
-pub struct Style {
-    pub fill: Color,
-    pub stroke: Stroke,
+#[derive(Clone, Debug)]
+pub struct Style<T> {
+    pub fill: Option<Color>,
+    pub ty: Option<T>,
 }
 
-impl Style {
+impl<T> Style<T> {
     pub fn new() -> Self {
         Self::default()
     }
 
     pub fn fill(self, fill: Color) -> Self {
         Self {
-            fill,
-            stroke: self.stroke,
-        }
-    }
-
-    pub fn stroke(self, stroke: Stroke) -> Self {
-        Self {
-            fill: self.fill,
-            stroke,
+            fill: Some(fill),
+            ty: self.ty,
         }
     }
 }
 
-impl Display for Style {
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        write!(
-            f,
-            "fill: {}; {}",
-            self.fill,
-            self.stroke,
-        )
+impl Style<Stroke> {
+    pub fn stroke(self, stroke: Stroke) -> Self {
+        Self {
+            fill: self.fill,
+            ty: Some(stroke),
+        }
+    }
+}
+
+impl Style<Font> {
+    pub fn font(self, font: Font) -> Self {
+        Self {
+            fill: self.fill,
+            ty: Some(font),
+        }
+    }
+}
+
+impl<T: WriteAttribute> WriteAttribute for Style<T> {
+    fn write(&self, attributes: &mut svg::Attributes) {
+        if let Some(fill) = self.fill {
+            attributes.insert(keys::FILL.into(), fill.into());
+        }
+        if let Some(ref ty) = self.ty {
+            ty.write(attributes);
+        }
+    }
+}
+
+impl<T> Default for Style<T> {
+    fn default() -> Self {
+        Self {
+            fill: None,
+            ty: None,
+        }
     }
 }

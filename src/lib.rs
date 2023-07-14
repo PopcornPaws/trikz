@@ -1,11 +1,20 @@
 pub mod anchor;
-pub mod into_svg;
 pub mod nodes;
 pub mod style;
+pub mod transform;
 
+macro_rules! scalar {
+    ($sc:tt) => {
+        type Scalar = $sc;
+        #[allow(unused)]
+        use std::$sc::consts::PI;
+    }
+}
 
-type Scalar = f32;
+scalar!(f32);
+
 type Vector2 = nalgebra::Vector2<Scalar>;
+
 
 
 #[macro_export]

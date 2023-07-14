@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter, Result as FmtResult};
+use crate::transform::svg::Value;
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]
 pub enum Color {
@@ -8,31 +8,23 @@ pub enum Color {
     Gray,
     Green,
     Magenta,
-    None,
     Red,
     White,
     Rgb(u8, u8, u8),
 }
 
-impl Display for Color {
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+impl Into<Value> for Color {
+    fn into(self) -> Value {
         match self {
-            Self::Black => write!(f, "black"),
-            Self::Blue => write!(f, "blue"),
-            Self::Cyan => write!(f, "cyan"),
-            Self::Gray => write!(f, "gray"),
-            Self::Green => write!(f, "green"),
-            Self::Magenta => write!(f, "magenta"),
-            Self::None => write!(f, "none"),
-            Self::Red => write!(f, "red"),
-            Self::White => write!(f, "white"),
-            Self::Rgb(r, g, b) => write!(f, "#{:02X}{:02X}{:02X}", r, g, b),
+            Self::Black => "black".into(),
+            Self::Blue => "blue".into(),
+            Self::Cyan => "cyan".into(),
+            Self::Gray => "gray".into(),
+            Self::Green => "green".into(),
+            Self::Magenta => "magenta".into(),
+            Self::Red => "red".into(),
+            Self::White => "white".into(),
+            Self::Rgb(r, g, b) => format!("#{:02X}{:02X}{:02X}", r, g, b).into(),
         }
-    }
-}
-
-impl Default for Color {
-    fn default() -> Self {
-        Self::None
     }
 }
