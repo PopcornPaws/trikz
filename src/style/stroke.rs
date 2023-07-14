@@ -124,7 +124,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn build_stroke() {
+    fn build() {
         let stroke = Stroke::default();
 
         assert_eq!(stroke.color, Color::None);
@@ -158,7 +158,7 @@ mod test {
     }
 
     #[test]
-    fn display_stroke() {
+    fn display() {
         let stroke = Stroke::default();
 
         assert_eq!(

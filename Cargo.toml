@@ -1,5 +1,5 @@
 [package]
-author = "PopcornPaws"
+authors = ["PopcornPaws"]
 name = "trikz"
 version = "0.0.1"
 edition = "2021"

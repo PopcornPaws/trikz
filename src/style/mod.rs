@@ -5,7 +5,6 @@ pub use color::Color;
 pub use stroke::Stroke;
 
 use std::fmt::{Display, Formatter, Result as FmtResult};
-use std::string::ToString;
 
 #[derive(Clone, Debug, Default)]
 pub struct Style {

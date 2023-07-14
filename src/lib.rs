@@ -1,6 +1,6 @@
 pub mod anchor;
 pub mod into_svg;
-pub mod rectangle;
+pub mod nodes;
 pub mod style;
 
 
@@ -42,3 +42,10 @@ fn pixels() {
     assert_eq!(cm!(10.5), mm!(105));
     assert_eq!(inch!(2), px!(192));
 }
+
+// TODO
+// - text
+// - line
+// - arrow
+// - marker
+// - path
