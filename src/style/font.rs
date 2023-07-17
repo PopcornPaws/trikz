@@ -1,4 +1,4 @@
-use crate::svg::{self, keys, WriteAttributes};
+use crate::svg::{keys, Attributes, Value, WriteAttributes};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Font {
@@ -50,6 +50,7 @@ impl Default for FontSize {
     }
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Clone, Copy, Debug)]
 pub enum FontSize {
     XXS,
@@ -63,22 +64,22 @@ pub enum FontSize {
 }
 
 impl WriteAttributes for Font {
-    fn write(&self, attributes: &mut svg::Attributes) {
+    fn write(&self, attributes: &mut Attributes) {
         attributes.insert(keys::FONT_SIZE.into(), self.size.into());
     }
 }
 
-impl Into<svg::Value> for FontSize {
-    fn into(self) -> svg::Value {
-        match self {
-            Self::XXS => "xx-small".into(),
-            Self::XS => "x-small".into(),
-            Self::S => "small".into(),
-            Self::M => "medium".into(),
-            Self::L => "large".into(),
-            Self::XL => "x-large".into(),
-            Self::XXL => "xx-large".into(),
-            Self::XXXL => "xxx-large".into(),
+impl From<FontSize> for Value {
+    fn from(fontsize: FontSize) -> Value {
+        match fontsize {
+            FontSize::XXS => "xx-small".into(),
+            FontSize::XS => "x-small".into(),
+            FontSize::S => "small".into(),
+            FontSize::M => "medium".into(),
+            FontSize::L => "large".into(),
+            FontSize::XL => "x-large".into(),
+            FontSize::XXL => "xx-large".into(),
+            FontSize::XXXL => "xxx-large".into(),
         }
     }
 }
@@ -89,23 +90,50 @@ mod test {
     use std::ops::Deref;
 
     #[test]
-    fn font_size_into_value() {
-        assert_eq!(<FontSize as Into<svg::Value>>::into(FontSize::XXS).deref(), svg::Value::from("xx-small").deref());
-        assert_eq!(<FontSize as Into<svg::Value>>::into(FontSize::XS).deref(), svg::Value::from("x-small").deref());
-        assert_eq!(<FontSize as Into<svg::Value>>::into(FontSize::S).deref(), svg::Value::from("small").deref());
-        assert_eq!(<FontSize as Into<svg::Value>>::into(FontSize::M).deref(), svg::Value::from("medium").deref());
-        assert_eq!(<FontSize as Into<svg::Value>>::into(FontSize::L).deref(), svg::Value::from("large").deref());
-        assert_eq!(<FontSize as Into<svg::Value>>::into(FontSize::XL).deref(), svg::Value::from("x-large").deref());
-        assert_eq!(<FontSize as Into<svg::Value>>::into(FontSize::XXL).deref(), svg::Value::from("xx-large").deref());
-        assert_eq!(<FontSize as Into<svg::Value>>::into(FontSize::XXXL).deref(), svg::Value::from("xxx-large").deref());
+    fn into_value() {
+        assert_eq!(
+            Value::from(FontSize::XXS).deref(),
+            Value::from("xx-small").deref()
+        );
+        assert_eq!(
+            Value::from(FontSize::XS).deref(),
+            Value::from("x-small").deref()
+        );
+        assert_eq!(
+            Value::from(FontSize::S).deref(),
+            Value::from("small").deref()
+        );
+        assert_eq!(
+            Value::from(FontSize::M).deref(),
+            Value::from("medium").deref()
+        );
+        assert_eq!(
+            Value::from(FontSize::L).deref(),
+            Value::from("large").deref()
+        );
+        assert_eq!(
+            Value::from(FontSize::XL).deref(),
+            Value::from("x-large").deref()
+        );
+        assert_eq!(
+            Value::from(FontSize::XXL).deref(),
+            Value::from("xx-large").deref()
+        );
+        assert_eq!(
+            Value::from(FontSize::XXXL).deref(),
+            Value::from("xxx-large").deref()
+        );
     }
 
     #[test]
-    fn font_write_attribute() {
-        let mut attributes = svg::Attributes::new();
+    fn write_attribute() {
+        let mut attributes = Attributes::new();
         let font = Font::default();
         font.write(&mut attributes);
 
-        assert_eq!(attributes.get(keys::FONT_SIZE).unwrap().clone().deref(), "medium");
+        assert_eq!(
+            attributes.get(keys::FONT_SIZE).unwrap().clone().deref(),
+            "medium"
+        );
     }
 }

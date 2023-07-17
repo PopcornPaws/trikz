@@ -13,18 +13,18 @@ pub enum Color {
     Rgb(u8, u8, u8),
 }
 
-impl Into<Value> for Color {
-    fn into(self) -> Value {
-        match self {
-            Self::Black => "black".into(),
-            Self::Blue => "blue".into(),
-            Self::Cyan => "cyan".into(),
-            Self::Gray => "gray".into(),
-            Self::Green => "green".into(),
-            Self::Magenta => "magenta".into(),
-            Self::Red => "red".into(),
-            Self::White => "white".into(),
-            Self::Rgb(r, g, b) => format!("#{:02X}{:02X}{:02X}", r, g, b).into(),
+impl From<Color> for Value {
+    fn from(color: Color) -> Value {
+        match color {
+            Color::Black => "black".into(),
+            Color::Blue => "blue".into(),
+            Color::Cyan => "cyan".into(),
+            Color::Gray => "gray".into(),
+            Color::Green => "green".into(),
+            Color::Magenta => "magenta".into(),
+            Color::Red => "red".into(),
+            Color::White => "white".into(),
+            Color::Rgb(r, g, b) => format!("#{:02X}{:02X}{:02X}", r, g, b).into(),
         }
     }
 }

@@ -9,7 +9,7 @@ pub use stroke::Stroke;
 pub use transform::Transform;
 
 use crate::{Scalar, Vector2};
-use crate::svg::{self, keys, WriteAttributes};
+use crate::svg::{keys, WriteAttributes, Attributes};
 
 #[derive(Clone, Debug)]
 pub struct Style<T> {
@@ -34,7 +34,7 @@ impl<T> Style<T> {
     pub fn transform(self, transform: Transform) -> Self {
         Self {
             fill: self.fill,
-            transform: transform,
+            transform,
             ty: self.ty,
         }
     }
@@ -81,7 +81,7 @@ impl Style<Font> {
 }
 
 impl<T: WriteAttributes> WriteAttributes for Style<T> {
-    fn write(&self, attributes: &mut svg::Attributes) {
+    fn write(&self, attributes: &mut Attributes) {
         if let Some(fill) = self.fill {
             attributes.insert(keys::FILL.into(), fill.into());
         }

@@ -1,6 +1,6 @@
 use crate::anchor::{Anchor, AnchorT};
 use crate::style::{Stroke, Style};
-use crate::svg::{self, keys, IntoElem, WriteAttributes};
+use crate::svg::{keys, IntoElem, Rectangle as SvgRectangle, WriteAttributes};
 use crate::{Scalar, Vector2};
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -54,10 +54,10 @@ impl Rectangle {
 }
 
 impl IntoElem for Rectangle {
-    type Output = svg::Rectangle;
+    type Output = SvgRectangle;
     type StyleType = Stroke;
     fn into_elem(self, style: &Style<Self::StyleType>) -> Self::Output {
-        let mut output = svg::Rectangle::new()
+        let mut output = SvgRectangle::new()
             .set(keys::X, self.origin[0])
             .set(keys::Y, self.origin[1])
             .set(keys::WIDTH, self.width)
@@ -110,54 +110,33 @@ mod test {
 
         let style = Style::default();
 
-        let svg = rectangle.into_elem(&style);
-        let svg_attributes = svg.get_attributes();
+        let elem = rectangle.into_elem(&style);
+        let attributes = elem.get_attributes();
 
-        assert_eq!(svg_attributes.get(keys::X).unwrap().clone().deref(), "10");
-        assert_eq!(svg_attributes.get(keys::Y).unwrap().clone().deref(), "20");
-        assert_eq!(
-            svg_attributes.get(keys::WIDTH).unwrap().clone().deref(),
-            "10"
-        );
-        assert_eq!(
-            svg_attributes.get(keys::HEIGHT).unwrap().clone().deref(),
-            "100"
-        );
-        assert_eq!(
-            svg_attributes.get(keys::CORNER).unwrap().clone().deref(),
-            "4"
-        );
-        assert!(svg_attributes.get(keys::FILL).is_none());
-        assert!(svg_attributes.get(keys::STROKE).is_none());
+        assert_eq!(attributes.get(keys::X).unwrap().clone().deref(), "10");
+        assert_eq!(attributes.get(keys::Y).unwrap().clone().deref(), "20");
+        assert_eq!(attributes.get(keys::WIDTH).unwrap().clone().deref(), "10");
+        assert_eq!(attributes.get(keys::HEIGHT).unwrap().clone().deref(), "100");
+        assert_eq!(attributes.get(keys::CORNER).unwrap().clone().deref(), "4");
+        assert!(attributes.get(keys::FILL).is_none());
+        assert!(attributes.get(keys::STROKE).is_none());
 
         let rectangle = Rectangle::new();
 
         let stroke = Stroke::new().dashed().color(Color::Magenta);
         let style = Style::new().fill(Color::Green).stroke(stroke);
 
-        let svg = rectangle.into_elem(&style);
-        let svg_attributes = svg.get_attributes();
+        let elem = rectangle.into_elem(&style);
+        let attributes = elem.get_attributes();
 
-        assert_eq!(svg_attributes.get(keys::X).unwrap().clone().deref(), "0");
-        assert_eq!(svg_attributes.get(keys::Y).unwrap().clone().deref(), "0");
+        assert_eq!(attributes.get(keys::X).unwrap().clone().deref(), "0");
+        assert_eq!(attributes.get(keys::Y).unwrap().clone().deref(), "0");
+        assert_eq!(attributes.get(keys::WIDTH).unwrap().clone().deref(), "0");
+        assert_eq!(attributes.get(keys::HEIGHT).unwrap().clone().deref(), "0");
+        assert_eq!(attributes.get(keys::CORNER).unwrap().clone().deref(), "0");
+        assert_eq!(attributes.get(keys::FILL).unwrap().clone().deref(), "green");
         assert_eq!(
-            svg_attributes.get(keys::WIDTH).unwrap().clone().deref(),
-            "0"
-        );
-        assert_eq!(
-            svg_attributes.get(keys::HEIGHT).unwrap().clone().deref(),
-            "0"
-        );
-        assert_eq!(
-            svg_attributes.get(keys::CORNER).unwrap().clone().deref(),
-            "0"
-        );
-        assert_eq!(
-            svg_attributes.get(keys::FILL).unwrap().clone().deref(),
-            "green"
-        );
-        assert_eq!(
-            svg_attributes.get(keys::STROKE).unwrap().clone().deref(),
+            attributes.get(keys::STROKE).unwrap().clone().deref(),
             "magenta"
         );
     }

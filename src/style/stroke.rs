@@ -1,5 +1,5 @@
 use super::color::Color;
-use crate::svg::{self, keys, WriteAttributes};
+use crate::svg::{keys, Attributes, Value, WriteAttributes};
 use crate::Scalar;
 
 const DASH: char = '4';
@@ -84,7 +84,7 @@ impl Stroke {
 }
 
 impl WriteAttributes for Stroke {
-    fn write(&self, attributes: &mut svg::Attributes) {
+    fn write(&self, attributes: &mut Attributes) {
         if let Some(color) = self.color {
             attributes.insert(keys::STROKE.into(), color.into());
             attributes.insert(
@@ -105,13 +105,13 @@ enum StrokeStyle {
     Solid,
 }
 
-impl Into<svg::Value> for StrokeStyle {
-    fn into(self) -> svg::Value {
-        match self {
-            Self::Dashed => format!("{} {}", DASH, DOT).into(),
-            Self::Dashdotted => format!("{} {} {} {}", DASH, DOT, DASH, DOT).into(),
-            Self::Dotted => format!("{}", DOT).into(),
-            Self::Solid => "none".into(),
+impl From<StrokeStyle> for Value {
+    fn from(stroke_style: StrokeStyle) -> Value {
+        match stroke_style {
+            StrokeStyle::Dashed => format!("{} {}", DASH, DOT).into(),
+            StrokeStyle::Dashdotted => format!("{} {} {} {}", DASH, DOT, DASH, DOT).into(),
+            StrokeStyle::Dotted => format!("{}", DOT).into(),
+            StrokeStyle::Solid => "none".into(),
         }
     }
 }
@@ -163,7 +163,7 @@ mod test {
 
     #[test]
     fn display() {
-        let mut attributes = svg::Attributes::new();
+        let mut attributes = Attributes::new();
         let stroke = Stroke::default();
         stroke.write(&mut attributes);
 
