@@ -1,4 +1,9 @@
+mod section;
+
+use crate::style::{Stroke, Style};
+use crate::svg::{keys, IntoElem, Path as SvgPath, Value, WriteAttributes};
 use crate::{Scalar, Vector2};
+use section::Section;
 
 #[derive(Clone, Debug)]
 pub struct Path {
@@ -16,12 +21,12 @@ impl PathBuilder {
         }
     }
 
-    pub fn mv_to(mut self, xy: Vector2) -> Self {
+    pub fn mv_to(&mut self, xy: Vector2) -> &mut Self {
         self.sequence.push(Section::MoveTo(xy));
         self
     }
 
-    pub fn mv(mut self, dxdy: Vector2) -> Self {
+    pub fn mv(&mut self, dxdy: Vector2) -> &mut Self {
         self.sequence.push(Section::Move(dxdy));
         self
     }
@@ -85,6 +90,10 @@ impl Path {
         self.sequence.as_ref()
     }
 
+    pub fn into_sequence(self) -> Vec<Section> {
+        self.sequence
+    }
+
     pub fn cursor(&self, index: usize) -> Vector2 {
         // NOTE sequence is never empty because Path can only be initialized via the `start`
         // method. Thus, we can extract the starting point which might be needed if the last
@@ -98,85 +107,33 @@ impl Path {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Section {
-    MoveTo(Vector2),
-    Move(Vector2),
-    LineTo(Vector2),
-    Line(Vector2),
-    VerticalLineTo(Scalar),
-    VerticalLine(Scalar),
-    HorizontalLineTo(Scalar),
-    HorizontalLine(Scalar),
-    CurveTo(Vector2, Vector2, Vector2), // Bézier curves
-    Curve(Vector2, Vector2, Vector2),
-    Close,
+impl From<Path> for Value {
+    fn from(path: Path) -> Value {
+        path.into_sequence()
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(" ")
+            .into()
+    }
 }
 
-impl Section {
-    pub fn cursor(&self, previous: Vector2) -> Option<Vector2> {
-        match self {
-            Self::MoveTo(xy) | Self::LineTo(xy) | Self::CurveTo(_, _, xy) => Some(*xy),
-            Self::Move(dxdy) | Self::Line(dxdy) | Self::Curve(_, _, dxdy) => Some(previous + dxdy),
-            Self::VerticalLineTo(y) => Some(Vector2::new(previous[0], *y)),
-            Self::VerticalLine(dy) => Some(previous + Vector2::new(0.0, *dy)),
-            Self::HorizontalLineTo(x) => Some(Vector2::new(*x, previous[1])),
-            Self::HorizontalLine(dx) => Some(previous + Vector2::new(*dx, 0.0)),
-            Self::Close => None,
-        }
+impl IntoElem for Path {
+    type Output = SvgPath;
+    type StyleType = Stroke;
+    fn into_elem(self, style: &Style<Self::StyleType>) -> Self::Output {
+        let mut path = SvgPath::new().set(keys::PATH, Value::from(self));
+
+        style.write(path.get_attributes_mut());
+
+        path
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-
-    #[test]
-    fn section_cursor() {
-        assert_eq!(
-            Section::MoveTo(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
-            Some(Vector2::new(10.0, 20.0))
-        );
-        assert_eq!(
-            Section::Move(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
-            Some(Vector2::new(11.0, 21.0))
-        );
-        assert_eq!(
-            Section::LineTo(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
-            Some(Vector2::new(10.0, 20.0))
-        );
-        assert_eq!(
-            Section::Line(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
-            Some(Vector2::new(11.0, 21.0))
-        );
-        assert_eq!(
-            Section::CurveTo(Vector2::zeros(), Vector2::zeros(), Vector2::new(10.0, 20.0))
-                .cursor(Vector2::new(1.0, 1.0)),
-            Some(Vector2::new(10.0, 20.0))
-        );
-        assert_eq!(
-            Section::Curve(Vector2::zeros(), Vector2::zeros(), Vector2::new(10.0, 20.0))
-                .cursor(Vector2::new(1.0, 1.0)),
-            Some(Vector2::new(11.0, 21.0))
-        );
-        assert_eq!(
-            Section::VerticalLineTo(20.0).cursor(Vector2::new(1.0, 1.0)),
-            Some(Vector2::new(1.0, 20.0))
-        );
-        assert_eq!(
-            Section::VerticalLine(20.0).cursor(Vector2::new(1.0, 1.0)),
-            Some(Vector2::new(1.0, 21.0))
-        );
-        assert_eq!(
-            Section::HorizontalLineTo(20.0).cursor(Vector2::new(1.0, 1.0)),
-            Some(Vector2::new(20.0, 1.0))
-        );
-        assert_eq!(
-            Section::HorizontalLine(20.0).cursor(Vector2::new(1.0, 1.0)),
-            Some(Vector2::new(21.0, 1.0))
-        );
-        assert!(Section::Close.cursor(Vector2::zeros()).is_none());
-    }
+    use std::ops::Deref;
 
     #[test]
     fn build() {
@@ -235,5 +192,31 @@ mod test {
         assert_eq!(path.cursor(2), origin + Vector2::new(x, y));
         assert_eq!(path.cursor(3), origin + Vector2::new(x, y));
         assert_eq!(path.cursor(4), origin + Vector2::new(x, y));
+
+        let path = PathBuilder::start(origin)
+            .vline(y)
+            .hline(x)
+            .line_to(Vector2::new(100.0, 200.0))
+            .close();
+        assert_eq!(path.cursor(path.sequence().len() - 1), origin);
+    }
+
+    #[test]
+    fn convert_to_value() {
+        let path = PathBuilder::start(Vector2::new(-1.75, -2.5))
+            .vline(4.0)
+            .hline(-12.34)
+            .mv(Vector2::new(1.0, -1.0))
+            .curve_to(
+                100.0 * Vector2::x(),
+                -200.0 * Vector2::y(),
+                Vector2::zeros(),
+            )
+            .close();
+
+        assert_eq!(
+            Value::from(path).deref(),
+            Value::from("M -1.75 -2.5 v 4 h -12.34 m 1 -1 C 100 0, -0 -200, 0 0 Z").deref(),
+        );
     }
 }

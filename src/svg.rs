@@ -29,6 +29,9 @@ pub mod keys {
 
     // transform
     pub const TRANSFORM: &str = "transform";
+
+    // path
+    pub const PATH: &str = "d";
 }
 
 pub trait IntoElem {

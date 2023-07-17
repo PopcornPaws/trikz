@@ -12,15 +12,12 @@ impl From<Transform> for Value {
         let transform_string = match (transform.translation, transform.rotation) {
             (Some(translation), Some(angle)) => format!(
                 "translate({},{}) rotate({})",
-                translation[0] as isize, translation[1] as isize, angle as isize
+                translation[0], translation[1], angle
             ),
             (Some(translation), None) => {
-                format!(
-                    "translate({},{})",
-                    translation[0] as isize, translation[1] as isize
-                )
+                format!("translate({},{})", translation[0], translation[1])
             }
-            (None, Some(angle)) => format!("rotate({})", angle as isize),
+            (None, Some(angle)) => format!("rotate({})", angle),
             (None, None) => "none".to_string(),
         };
 
