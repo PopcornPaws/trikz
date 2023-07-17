@@ -1,6 +1,6 @@
 use crate::anchor::{Anchor, AnchorT};
 use crate::style::{Stroke, Style};
-use crate::transform::{keys, svg, Transform, WriteAttribute};
+use crate::svg::{self, keys, IntoElem, WriteAttributes};
 use crate::{Scalar, Vector2};
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -29,10 +29,10 @@ impl Circle {
     }
 }
 
-impl Transform for Circle {
+impl IntoElem for Circle {
     type Output = svg::Circle;
     type StyleType = Stroke;
-    fn into_svg(self, style: &Style<Self::StyleType>) -> Self::Output {
+    fn into_elem(self, style: &Style<Self::StyleType>) -> Self::Output {
         let mut output = svg::Circle::new()
             .set(keys::CX, self.origin[0])
             .set(keys::CY, self.origin[1])
@@ -78,10 +78,10 @@ mod test {
     use std::ops::Deref;
 
     #[test]
-    fn into_svg() {
+    fn into_elem() {
         let circle = Circle::new();
         let style = Style::default();
-        let svg = circle.into_svg(&style);
+        let svg = circle.into_elem(&style);
         let svg_attributes = svg.get_attributes();
 
         assert_eq!(svg_attributes.get(keys::CX).unwrap().clone().deref(), "0");
@@ -95,7 +95,7 @@ mod test {
 
         let circle = Circle::new().at(Vector2::new(12.0, -32.0)).radius(10.0);
         let style = Style::new().fill(Color::White);
-        let svg = circle.into_svg(&style);
+        let svg = circle.into_elem(&style);
         let svg_attributes = svg.get_attributes();
 
         assert_eq!(svg_attributes.get(keys::CX).unwrap().clone().deref(), "12");

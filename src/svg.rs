@@ -1,9 +1,7 @@
 use crate::style::Style;
 
-pub mod svg {
-    pub use svg::node::{Attributes, Value, Node};
-    pub use svg::node::element::*;
-}
+pub use svglib::node::element::*;
+pub use svglib::node::{Attributes, Node, Value};
 
 pub mod keys {
     pub const X: &str = "x";
@@ -33,12 +31,12 @@ pub mod keys {
     pub const TRANSFORM: &str = "transform";
 }
 
-pub trait Transform {
-    type Output: Sized + svg::Node;
-    type StyleType: WriteAttribute;
-    fn into_svg(self, style: &Style<Self::StyleType>) -> Self::Output;
+pub trait IntoElem {
+    type Output: Sized + Node;
+    type StyleType: WriteAttributes;
+    fn into_elem(self, style: &Style<Self::StyleType>) -> Self::Output;
 }
 
-pub trait WriteAttribute {
-    fn write(&self, attributes: &mut svg::Attributes);
+pub trait WriteAttributes {
+    fn write(&self, attributes: &mut Attributes);
 }

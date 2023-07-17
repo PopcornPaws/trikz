@@ -1,16 +1,18 @@
 mod color;
 mod font;
 mod stroke;
+mod transform;
 
 pub use color::Color;
 pub use font::Font;
 pub use stroke::Stroke;
 pub use transform::Transform;
 
-use crate::transform::{keys, svg, WriteAttributes};
+use crate::{Scalar, Vector2};
+use crate::svg::{self, keys, WriteAttributes};
 
-#[derive(Clone, Debug, Default)]
-pub struct Style<T: Default> {
+#[derive(Clone, Debug)]
+pub struct Style<T> {
     pub fill: Option<Color>,
     pub transform: Transform,
     pub ty: Option<T>,
@@ -37,8 +39,8 @@ impl<T> Style<T> {
         }
     }
 
-    pub fn translate(mut self, to: Vector2) -> Self {
-        self.transform.translate = Some(to);
+    pub fn translate(mut self, translation: Vector2) -> Self {
+        self.transform.translation = Some(translation);
 
         Self {
             fill: self.fill,
@@ -48,7 +50,7 @@ impl<T> Style<T> {
     }
 
     pub fn rotate(mut self, angle: Scalar) -> Self {
-        self.transform.rotate = Some(angle);
+        self.transform.rotation = Some(angle);
 
         Self {
             fill: self.fill,
@@ -87,18 +89,16 @@ impl<T: WriteAttributes> WriteAttributes for Style<T> {
             ty.write(attributes);
         }
 
-        attributes.insert(keys::TRANSFORM.into(), self.transform.into())
+        attributes.insert(keys::TRANSFORM.into(), self.transform.into());
     }
 }
 
-/*
 impl<T> Default for Style<T> {
     fn default() -> Self {
         Self {
             fill: None,
-            transform: None,
+            transform: Default::default(),
             ty: None,
         }
     }
 }
-*/

@@ -9,4 +9,4 @@ description = "Placeholder for trikz, a tikz-like drawing library"
 
 [dependencies]
 nalgebra = { version = "0.32", default-features = false, features = ["libm"] }
-svg = "0.13"
+svglib = { package = "svg", version = "0.13" }

@@ -1,6 +1,6 @@
 use crate::anchor::{Anchor, AnchorT};
 use crate::style::{Stroke, Style};
-use crate::transform::{keys, svg, Transform, WriteAttribute};
+use crate::svg::{self, keys, IntoElem, WriteAttributes};
 use crate::{Scalar, Vector2};
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -53,10 +53,10 @@ impl Rectangle {
     }
 }
 
-impl Transform for Rectangle {
+impl IntoElem for Rectangle {
     type Output = svg::Rectangle;
     type StyleType = Stroke;
-    fn into_svg(self, style: &Style<Self::StyleType>) -> Self::Output {
+    fn into_elem(self, style: &Style<Self::StyleType>) -> Self::Output {
         let mut output = svg::Rectangle::new()
             .set(keys::X, self.origin[0])
             .set(keys::Y, self.origin[1])
@@ -101,7 +101,7 @@ mod test {
     use std::ops::Deref;
 
     #[test]
-    fn into_svg() {
+    fn into_elem() {
         let rectangle = Rectangle::new()
             .at(Vector2::new(10.0, 20.0))
             .width(10.0)
@@ -110,7 +110,7 @@ mod test {
 
         let style = Style::default();
 
-        let svg = rectangle.into_svg(&style);
+        let svg = rectangle.into_elem(&style);
         let svg_attributes = svg.get_attributes();
 
         assert_eq!(svg_attributes.get(keys::X).unwrap().clone().deref(), "10");
@@ -135,7 +135,7 @@ mod test {
         let stroke = Stroke::new().dashed().color(Color::Magenta);
         let style = Style::new().fill(Color::Green).stroke(stroke);
 
-        let svg = rectangle.into_svg(&style);
+        let svg = rectangle.into_elem(&style);
         let svg_attributes = svg.get_attributes();
 
         assert_eq!(svg_attributes.get(keys::X).unwrap().clone().deref(), "0");

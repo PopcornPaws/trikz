@@ -1,4 +1,4 @@
-use crate::transform::{keys, svg, WriteAttribute};
+use crate::svg::{self, keys, WriteAttributes};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Font {
@@ -62,7 +62,7 @@ pub enum FontSize {
     XXXL,
 }
 
-impl WriteAttribute for Font {
+impl WriteAttributes for Font {
     fn write(&self, attributes: &mut svg::Attributes) {
         attributes.insert(keys::FONT_SIZE.into(), self.size.into());
     }

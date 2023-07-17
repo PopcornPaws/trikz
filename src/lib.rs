@@ -5,7 +5,7 @@
 pub mod anchor;
 pub mod elements;
 pub mod style;
-pub mod transform;
+pub mod svg;
 
 macro_rules! scalar {
     ($sc:tt) => {

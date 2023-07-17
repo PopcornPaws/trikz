@@ -1,5 +1,5 @@
 use super::color::Color;
-use crate::transform::{keys, svg, WriteAttribute};
+use crate::svg::{self, keys, WriteAttributes};
 use crate::Scalar;
 
 const DASH: char = '4';
@@ -83,7 +83,7 @@ impl Stroke {
     }
 }
 
-impl WriteAttribute for Stroke {
+impl WriteAttributes for Stroke {
     fn write(&self, attributes: &mut svg::Attributes) {
         if let Some(color) = self.color {
             attributes.insert(keys::STROKE.into(), color.into());
