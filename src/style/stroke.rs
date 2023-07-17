@@ -5,9 +5,10 @@ use crate::Scalar;
 const DASH: char = '4';
 const DOT: char = '1';
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct Stroke {
     color: Option<Color>,
+    markers: [Option<String>; 3],
     opacity: u8,
     width: Scalar,
     style: StrokeStyle,
@@ -17,6 +18,7 @@ impl Default for Stroke {
     fn default() -> Self {
         Self {
             color: None,
+            markers: [None, None, None],
             opacity: 100,
             width: 1.0,
             style: StrokeStyle::Solid,
@@ -31,6 +33,7 @@ impl Stroke {
     pub fn color(self, color: Color) -> Self {
         Self {
             color: Some(color),
+            markers: self.markers,
             opacity: self.opacity,
             width: self.width,
             style: self.style,
@@ -40,6 +43,7 @@ impl Stroke {
     pub fn opacity(self, opacity: u8) -> Self {
         Self {
             color: self.color,
+            markers: self.markers,
             opacity: opacity.min(100),
             width: self.width,
             style: self.style,
@@ -49,6 +53,7 @@ impl Stroke {
     pub fn width(self, width: Scalar) -> Self {
         Self {
             color: self.color,
+            markers: self.markers,
             opacity: self.opacity,
             width,
             style: self.style,
@@ -58,6 +63,7 @@ impl Stroke {
     pub fn dashed(self) -> Self {
         Self {
             color: self.color,
+            markers: self.markers,
             opacity: self.opacity,
             width: self.width,
             style: StrokeStyle::Dashed,
@@ -67,6 +73,7 @@ impl Stroke {
     pub fn dashdotted(self) -> Self {
         Self {
             color: self.color,
+            markers: self.markers,
             opacity: self.opacity,
             width: self.width,
             style: StrokeStyle::Dashdotted,
@@ -76,6 +83,40 @@ impl Stroke {
     pub fn dotted(self) -> Self {
         Self {
             color: self.color,
+            markers: self.markers,
+            opacity: self.opacity,
+            width: self.width,
+            style: StrokeStyle::Dotted,
+        }
+    }
+
+    pub fn marker_start(mut self, marker_id: String) -> Self {
+        self.markers[0] = Some(marker_id);
+        Self {
+            color: self.color,
+            markers: self.markers,
+            opacity: self.opacity,
+            width: self.width,
+            style: StrokeStyle::Dotted,
+        }
+    }
+
+    pub fn marker_mid(mut self, marker_id: String) -> Self {
+        self.markers[1] = Some(marker_id);
+        Self {
+            color: self.color,
+            markers: self.markers,
+            opacity: self.opacity,
+            width: self.width,
+            style: StrokeStyle::Dotted,
+        }
+    }
+
+    pub fn marker_end(mut self, marker_id: String) -> Self {
+        self.markers[2] = Some(marker_id);
+        Self {
+            color: self.color,
+            markers: self.markers,
             opacity: self.opacity,
             width: self.width,
             style: StrokeStyle::Dotted,
@@ -93,6 +134,14 @@ impl WriteAttributes for Stroke {
             );
             attributes.insert(keys::STROKE_WIDTH.into(), self.width.into());
             attributes.insert(keys::STROKE_STYLE.into(), self.style.into());
+
+            self.markers
+                .iter()
+                .zip(keys::MARKERS)
+                .filter_map(|(maybe_marker, key)| maybe_marker.as_ref().map(|marker| (marker, key)))
+                .for_each(|(marker, &key)| {
+                    attributes.insert(key.into(), format!("url(#{})", marker).into());
+                });
         }
     }
 }

@@ -1,107 +1,103 @@
-mod section;
+mod segment;
 
 use crate::style::{Stroke, Style};
 use crate::svg::{keys, IntoElem, Path as SvgPath, Value, WriteAttributes};
 use crate::{Scalar, Vector2};
-use section::Section;
+use segment::Segment;
 
 #[derive(Clone, Debug)]
-pub struct Path {
-    sequence: Vec<Section>,
-}
+pub struct Path(Vec<Segment>);
 
-pub struct PathBuilder {
-    sequence: Vec<Section>,
-}
+pub struct PathBuilder(Vec<Segment>);
 
 impl PathBuilder {
     pub fn start(start: Vector2) -> Self {
-        Self {
-            sequence: vec![Section::MoveTo(start)],
-        }
+        Self(vec![Segment::MoveTo(start)])
     }
 
     pub fn mv_to(&mut self, xy: Vector2) -> &mut Self {
-        self.sequence.push(Section::MoveTo(xy));
+        self.0.push(Segment::MoveTo(xy));
         self
     }
 
     pub fn mv(&mut self, dxdy: Vector2) -> &mut Self {
-        self.sequence.push(Section::Move(dxdy));
+        self.0.push(Segment::Move(dxdy));
         self
     }
 
     pub fn line_to(&mut self, xy: Vector2) -> &mut Self {
-        self.sequence.push(Section::LineTo(xy));
+        self.0.push(Segment::LineTo(xy));
         self
     }
 
     pub fn line(&mut self, dxdy: Vector2) -> &mut Self {
-        self.sequence.push(Section::Line(dxdy));
+        self.0.push(Segment::Line(dxdy));
         self
     }
 
     pub fn vline_to(&mut self, y: Scalar) -> &mut Self {
-        self.sequence.push(Section::VerticalLineTo(y));
+        self.0.push(Segment::VerticalLineTo(y));
         self
     }
 
     pub fn vline(&mut self, dy: Scalar) -> &mut Self {
-        self.sequence.push(Section::VerticalLine(dy));
+        self.0.push(Segment::VerticalLine(dy));
         self
     }
 
     pub fn hline_to(&mut self, x: Scalar) -> &mut Self {
-        self.sequence.push(Section::HorizontalLineTo(x));
+        self.0.push(Segment::HorizontalLineTo(x));
         self
     }
 
     pub fn hline(&mut self, dx: Scalar) -> &mut Self {
-        self.sequence.push(Section::HorizontalLine(dx));
+        self.0.push(Segment::HorizontalLine(dx));
         self
     }
 
     pub fn curve_to(&mut self, x1y1: Vector2, x2y2: Vector2, xy: Vector2) -> &mut Self {
-        self.sequence.push(Section::CurveTo(x1y1, x2y2, xy));
+        self.0.push(Segment::CurveTo(x1y1, x2y2, xy));
         self
     }
 
     pub fn curve(&mut self, dx1dy1: Vector2, dx2dy2: Vector2, dxdy: Vector2) -> &mut Self {
-        self.sequence.push(Section::Curve(dx1dy1, dx2dy2, dxdy));
+        self.0.push(Segment::Curve(dx1dy1, dx2dy2, dxdy));
         self
     }
 
     pub fn end(&mut self) -> Path {
-        Path {
-            sequence: std::mem::take(&mut self.sequence),
-        }
+        Path(std::mem::take(&mut self.0))
     }
 
     pub fn close(&mut self) -> Path {
-        self.sequence.push(Section::Close);
-        Path {
-            sequence: std::mem::take(&mut self.sequence),
-        }
+        self.0.push(Segment::Close);
+        Path(std::mem::take(&mut self.0))
     }
 }
 
 impl Path {
-    pub fn sequence(&self) -> &[Section] {
-        self.sequence.as_ref()
+    #[allow(clippy::len_without_is_empty)]
+    pub fn len(&self) -> usize {
+        self.0.len()
     }
 
-    pub fn into_sequence(self) -> Vec<Section> {
-        self.sequence
+    pub fn segments(&self) -> &[Segment] {
+        self.0.as_ref()
+    }
+
+    pub fn into_segments(self) -> Vec<Segment> {
+        self.0
     }
 
     pub fn cursor(&self, index: usize) -> Vector2 {
-        // NOTE sequence is never empty because Path can only be initialized via the `start`
-        // method. Thus, we can extract the starting point which might be needed if the last
-        // element is a Close section. Unwrap is also fine because Section::cursor() cannot return
-        // none when the Section is a MoveTo variant, which is always the case.
-        let start = self.sequence[0].cursor(Vector2::zeros()).unwrap();
-        self.sequence[1..]
+        // NOTE sequence is never empty because Path can only be initialized via the `start` method
+        // of the PathBuilder. Thus, we can extract the starting point which might be needed if the
+        // last element is a Close section. Unwrap is also fine because Segment::cursor() cannot
+        // return none when the Segment is a MoveTo variant, which is always the case.
+        let start = self.0[0].cursor(Vector2::zeros()).unwrap();
+        self.0
             .iter()
+            .skip(1)
             .take(index)
             .fold(start, |acc, x| x.cursor(acc).unwrap_or(start))
     }
@@ -109,7 +105,7 @@ impl Path {
 
 impl From<Path> for Value {
     fn from(path: Path) -> Value {
-        path.into_sequence()
+        path.into_segments()
             .into_iter()
             .map(|x| x.to_string())
             .collect::<Vec<String>>()
@@ -151,20 +147,20 @@ mod test {
             .close();
 
         assert_eq!(
-            path.sequence(),
+            path.segments(),
             &[
-                Section::MoveTo(Vector2::new(1.0, 2.0)),
-                Section::MoveTo(Vector2::zeros()),
-                Section::Move(Vector2::zeros()),
-                Section::LineTo(Vector2::zeros()),
-                Section::Line(Vector2::zeros()),
-                Section::HorizontalLineTo(0.0),
-                Section::HorizontalLine(0.0),
-                Section::VerticalLineTo(0.0),
-                Section::VerticalLine(0.0),
-                Section::CurveTo(Vector2::zeros(), Vector2::zeros(), Vector2::zeros()),
-                Section::Curve(Vector2::zeros(), Vector2::zeros(), Vector2::zeros()),
-                Section::Close,
+                Segment::MoveTo(Vector2::new(1.0, 2.0)),
+                Segment::MoveTo(Vector2::zeros()),
+                Segment::Move(Vector2::zeros()),
+                Segment::LineTo(Vector2::zeros()),
+                Segment::Line(Vector2::zeros()),
+                Segment::HorizontalLineTo(0.0),
+                Segment::HorizontalLine(0.0),
+                Segment::VerticalLineTo(0.0),
+                Segment::VerticalLine(0.0),
+                Segment::CurveTo(Vector2::zeros(), Vector2::zeros(), Vector2::zeros()),
+                Segment::Curve(Vector2::zeros(), Vector2::zeros(), Vector2::zeros()),
+                Segment::Close,
             ]
         );
     }
@@ -173,6 +169,7 @@ mod test {
     fn cursor() {
         let origin = Vector2::new(1.0, -2.0);
         let path = PathBuilder::start(origin).end();
+        assert_eq!(path.len(), 1);
         assert_eq!(path.cursor(0), origin);
         assert_eq!(path.cursor(1), origin);
         assert_eq!(path.cursor(4), origin);
@@ -198,7 +195,7 @@ mod test {
             .hline(x)
             .line_to(Vector2::new(100.0, 200.0))
             .close();
-        assert_eq!(path.cursor(path.sequence().len() - 1), origin);
+        assert_eq!(path.cursor(path.len() - 1), origin);
     }
 
     #[test]

@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 
 // TODO add Arcs
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Section {
+pub enum Segment {
     MoveTo(Vector2),
     Move(Vector2),
     LineTo(Vector2),
@@ -17,7 +17,7 @@ pub enum Section {
     Close,
 }
 
-impl Section {
+impl Segment {
     pub fn cursor(&self, previous: Vector2) -> Option<Vector2> {
         match self {
             Self::MoveTo(xy) | Self::LineTo(xy) | Self::CurveTo(_, _, xy) => Some(*xy),
@@ -31,7 +31,7 @@ impl Section {
     }
 }
 
-impl Display for Section {
+impl Display for Segment {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         match self {
             Self::MoveTo(xy) => write!(f, "M {} {}", xy[0], xy[1]),
@@ -64,48 +64,48 @@ mod test {
     #[test]
     fn cursor() {
         assert_eq!(
-            Section::MoveTo(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
+            Segment::MoveTo(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
             Some(Vector2::new(10.0, 20.0))
         );
         assert_eq!(
-            Section::Move(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
+            Segment::Move(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
             Some(Vector2::new(11.0, 21.0))
         );
         assert_eq!(
-            Section::LineTo(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
+            Segment::LineTo(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
             Some(Vector2::new(10.0, 20.0))
         );
         assert_eq!(
-            Section::Line(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
+            Segment::Line(Vector2::new(10.0, 20.0)).cursor(Vector2::new(1.0, 1.0)),
             Some(Vector2::new(11.0, 21.0))
         );
         assert_eq!(
-            Section::CurveTo(Vector2::zeros(), Vector2::zeros(), Vector2::new(10.0, 20.0))
+            Segment::CurveTo(Vector2::zeros(), Vector2::zeros(), Vector2::new(10.0, 20.0))
                 .cursor(Vector2::new(1.0, 1.0)),
             Some(Vector2::new(10.0, 20.0))
         );
         assert_eq!(
-            Section::Curve(Vector2::zeros(), Vector2::zeros(), Vector2::new(10.0, 20.0))
+            Segment::Curve(Vector2::zeros(), Vector2::zeros(), Vector2::new(10.0, 20.0))
                 .cursor(Vector2::new(1.0, 1.0)),
             Some(Vector2::new(11.0, 21.0))
         );
         assert_eq!(
-            Section::VerticalLineTo(20.0).cursor(Vector2::new(1.0, 1.0)),
+            Segment::VerticalLineTo(20.0).cursor(Vector2::new(1.0, 1.0)),
             Some(Vector2::new(1.0, 20.0))
         );
         assert_eq!(
-            Section::VerticalLine(20.0).cursor(Vector2::new(1.0, 1.0)),
+            Segment::VerticalLine(20.0).cursor(Vector2::new(1.0, 1.0)),
             Some(Vector2::new(1.0, 21.0))
         );
         assert_eq!(
-            Section::HorizontalLineTo(20.0).cursor(Vector2::new(1.0, 1.0)),
+            Segment::HorizontalLineTo(20.0).cursor(Vector2::new(1.0, 1.0)),
             Some(Vector2::new(20.0, 1.0))
         );
         assert_eq!(
-            Section::HorizontalLine(20.0).cursor(Vector2::new(1.0, 1.0)),
+            Segment::HorizontalLine(20.0).cursor(Vector2::new(1.0, 1.0)),
             Some(Vector2::new(21.0, 1.0))
         );
-        assert!(Section::Close.cursor(Vector2::zeros()).is_none());
+        assert!(Segment::Close.cursor(Vector2::zeros()).is_none());
     }
 
     #[test]
@@ -114,16 +114,16 @@ mod test {
         let rel = Vector2::new(1.5, -2.5);
         let c1 = Vector2::new(-10.0, 20.0);
         let c2 = Vector2::new(1.0, 0.0);
-        assert_eq!(Section::MoveTo(abs).to_string(), "M 1 2");
-        assert_eq!(Section::Move(rel).to_string(), "m 1.5 -2.5");
-        assert_eq!(Section::LineTo(abs).to_string(), "L 1 2");
-        assert_eq!(Section::Line(rel).to_string(), "l 1.5 -2.5");
-        assert_eq!(Section::VerticalLineTo(abs[1]).to_string(), "V 2");
-        assert_eq!(Section::VerticalLine(rel[1]).to_string(), "v -2.5");
-        assert_eq!(Section::HorizontalLineTo(abs[0]).to_string(), "H 1");
-        assert_eq!(Section::HorizontalLine(rel[0]).to_string(), "h 1.5");
-        assert_eq!(Section::CurveTo(c1, c2, abs).to_string(), "C -10 20, 1 0, 1 2");
-        assert_eq!(Section::Curve(c1, c2, rel).to_string(), "c -10 20, 1 0, 1.5 -2.5");
-        assert_eq!(Section::Close.to_string(), "Z");
+        assert_eq!(Segment::MoveTo(abs).to_string(), "M 1 2");
+        assert_eq!(Segment::Move(rel).to_string(), "m 1.5 -2.5");
+        assert_eq!(Segment::LineTo(abs).to_string(), "L 1 2");
+        assert_eq!(Segment::Line(rel).to_string(), "l 1.5 -2.5");
+        assert_eq!(Segment::VerticalLineTo(abs[1]).to_string(), "V 2");
+        assert_eq!(Segment::VerticalLine(rel[1]).to_string(), "v -2.5");
+        assert_eq!(Segment::HorizontalLineTo(abs[0]).to_string(), "H 1");
+        assert_eq!(Segment::HorizontalLine(rel[0]).to_string(), "h 1.5");
+        assert_eq!(Segment::CurveTo(c1, c2, abs).to_string(), "C -10 20, 1 0, 1 2");
+        assert_eq!(Segment::Curve(c1, c2, rel).to_string(), "c -10 20, 1 0, 1.5 -2.5");
+        assert_eq!(Segment::Close.to_string(), "Z");
     }
 }

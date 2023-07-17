@@ -32,6 +32,15 @@ pub mod keys {
 
     // path
     pub const PATH: &str = "d";
+
+    // line
+    pub const X1: &str = "x1";
+    pub const X2: &str = "x2";
+    pub const Y1: &str = "y1";
+    pub const Y2: &str = "y2";
+
+    // marker
+    pub const MARKERS: &[&str] = &["marker-start", "marker-mid", "marker-end"];
 }
 
 pub trait IntoElem {
