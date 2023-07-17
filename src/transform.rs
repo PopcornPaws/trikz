@@ -28,6 +28,9 @@ pub mod keys {
 
     // font
     pub const FONT_SIZE: &str = "font-size";
+
+    // transform
+    pub const TRANSFORM: &str = "transform";
 }
 
 pub trait Transform {
