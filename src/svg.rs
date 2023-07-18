@@ -43,6 +43,26 @@ pub mod keys {
     pub const MARKERS: &[&str] = &["marker-start", "marker-mid", "marker-end"];
 }
 
+// TODO
+// pub struct ElemBuilder<T>(T); // where T: Node
+//
+// impl From<WrapperType> for ElemBuilder {
+//  ...
+// }
+//
+// impl<T> ElemBuilder<T> {
+//  pub fn style(&mut self, style: &Style) -> &mut Self {
+//      ...
+//  }
+//  pub fn transform(&mut self, transform: ... ) -> &mut Self { // not necessary
+//  }
+//  pub fn translate(&mut self, translation: Vector2) -> &mut Self {
+//  }
+//  pub fn rotate(&mut self, angle: Scalar) -> &mut Self {
+//  }
+//  pub fn finalize(&mut self) -> T
+// }
+
 pub trait IntoElem {
     type Output: Sized + Node;
     type StyleType: WriteAttributes;
