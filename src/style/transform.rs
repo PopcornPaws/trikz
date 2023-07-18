@@ -1,6 +1,11 @@
 use crate::svg::Value;
 use crate::{Scalar, Vector2};
 
+pub trait Transform {
+    fn translate(&mut self, translation: Vector2);
+    fn rotate(&mut self, angle: Scalar);
+}
+
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Transform {
     pub translation: Option<Vector2>,

@@ -1,5 +1,4 @@
 use crate::style::Style;
-use crate::{Scalar, Vector2};
 
 pub use svglib::node::element::*;
 pub use svglib::node::{Attributes, Node, Value};
@@ -45,6 +44,10 @@ pub mod keys {
 
     // marker
     pub const MARKERS: &[&str] = &["marker-start", "marker-mid", "marker-end"];
+    pub const MARKER_ID: &str = "id";
+    pub const MARKER_HEIGHT: &str = "markerHeight";
+    pub const MARKER_WIDTH: &str = "markerWidth";
+    pub const MARKER_ORIENT: &str = "orient";
 }
 
 pub struct ElemBuilder<E, R> {
@@ -64,23 +67,20 @@ where
     }
 }
 
+// TODO should transformation (translation + rotation) methods be included in this impl, or on each
+// element? see src/style/transform.rs it should probably be a trait
 impl<E, R> ElemBuilder<E, R>
 where
     E: DerefMut<Target = Element>,
     R: ToAttributes,
 {
-    pub fn with_style(&mut self, style: &Style<R>) -> &mut Self {
+    pub fn with_style(mut self, style: &Style<R>) -> Self {
         style.to_attributes(self.elem.deref_mut().get_attributes_mut());
         self
     }
-    pub fn translate(&mut self, translation: Vector2) -> &mut Self {
-        todo!()
-    }
-    pub fn rotate(&mut self, angle: Scalar) -> &mut Self {
-        todo!()
-    }
-    pub fn finalize(&mut self) -> E {
-        todo!()
+
+    pub fn finalize(self) -> E {
+        self.elem
     }
 }
 
@@ -93,4 +93,8 @@ pub trait IntoElem: ToAttributes {
 
 pub trait ToAttributes {
     fn to_attributes(&self, attributes: &mut Attributes);
+}
+
+impl ToAttributes for () {
+    fn to_attributes(&self, _attributes: &mut Attributes) {}
 }
