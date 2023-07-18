@@ -1,6 +1,6 @@
-use crate::style::{Stroke, Style};
-use crate::svg::{keys, IntoElem, Line as SvgLine, WriteAttributes};
-use crate::Vector2;
+use crate::style::Stroke;
+use crate::svg::{keys, Attributes, IntoElem, Line as SvgLine, ToAttributes};
+use crate::{into_elem, Vector2};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Line {
@@ -23,19 +23,14 @@ impl Line {
     }
 }
 
-impl IntoElem for Line {
-    type Output = SvgLine;
-    type StyleType = Stroke;
-    fn into_elem(self, style: &Style<Self::StyleType>) -> Self::Output {
-        let mut output = SvgLine::new()
-            .set(keys::X1, self.start[0])
-            .set(keys::Y1, self.start[1])
-            .set(keys::X2, self.end[0])
-            .set(keys::Y2, self.end[1]);
+into_elem!(Line, SvgLine, Stroke);
 
-        style.write(output.get_attributes_mut());
-
-        output
+impl ToAttributes for Line {
+    fn to_attributes(&self, attributes: &mut Attributes) {
+        attributes.insert(keys::X1.into(), self.start[0].into());
+        attributes.insert(keys::Y1.into(), self.start[1].into());
+        attributes.insert(keys::X2.into(), self.end[0].into());
+        attributes.insert(keys::Y2.into(), self.end[1].into());
     }
 }
 
@@ -46,11 +41,9 @@ mod test {
 
     #[test]
     fn into_elem() {
-        let style = Style::default();
+        let mut attributes = Attributes::new();
         let line = Line::start(Vector2::y()).end(Vector2::x());
-
-        let elem = line.into_elem(&style);
-        let attributes = elem.get_attributes();
+        line.to_attributes(&mut attributes);
 
         assert_eq!(attributes.get(keys::X1).unwrap().deref(), "0");
         assert_eq!(attributes.get(keys::Y1).unwrap().deref(), "1");

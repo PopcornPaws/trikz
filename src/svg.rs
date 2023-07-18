@@ -1,7 +1,11 @@
 use crate::style::Style;
+use crate::{Scalar, Vector2};
 
 pub use svglib::node::element::*;
 pub use svglib::node::{Attributes, Node, Value};
+
+use std::marker::PhantomData;
+use std::ops::DerefMut;
 
 pub mod keys {
     pub const X: &str = "x";
@@ -43,32 +47,50 @@ pub mod keys {
     pub const MARKERS: &[&str] = &["marker-start", "marker-mid", "marker-end"];
 }
 
-// TODO
-// pub struct ElemBuilder<T>(T); // where T: Node
-//
-// impl From<WrapperType> for ElemBuilder {
-//  ...
-// }
-//
-// impl<T> ElemBuilder<T> {
-//  pub fn style(&mut self, style: &Style) -> &mut Self {
-//      ...
-//  }
-//  pub fn transform(&mut self, transform: ... ) -> &mut Self { // not necessary
-//  }
-//  pub fn translate(&mut self, translation: Vector2) -> &mut Self {
-//  }
-//  pub fn rotate(&mut self, angle: Scalar) -> &mut Self {
-//  }
-//  pub fn finalize(&mut self) -> T
-// }
-
-pub trait IntoElem {
-    type Output: Sized + Node;
-    type StyleType: WriteAttributes;
-    fn into_elem(self, style: &Style<Self::StyleType>) -> Self::Output;
+pub struct ElemBuilder<E, R> {
+    elem: E,
+    repr: PhantomData<R>,
 }
 
-pub trait WriteAttributes {
-    fn write(&self, attributes: &mut Attributes);
+impl<E, R, T> From<T> for ElemBuilder<E, R>
+where
+    T: IntoElem<Elem = E, Repr = R>,
+{
+    fn from(wrapper: T) -> Self {
+        Self {
+            elem: wrapper.into_elem(),
+            repr: PhantomData,
+        }
+    }
+}
+
+impl<E, R> ElemBuilder<E, R>
+where
+    E: DerefMut<Target = Element>,
+    R: ToAttributes,
+{
+    pub fn with_style(&mut self, style: &Style<R>) -> &mut Self {
+        style.to_attributes(self.elem.deref_mut().get_attributes_mut());
+        self
+    }
+    pub fn translate(&mut self, translation: Vector2) -> &mut Self {
+        todo!()
+    }
+    pub fn rotate(&mut self, angle: Scalar) -> &mut Self {
+        todo!()
+    }
+    pub fn finalize(&mut self) -> E {
+        todo!()
+    }
+}
+
+pub trait IntoElem: ToAttributes {
+    type Elem: DerefMut<Target = Element>;
+    type Repr: ToAttributes;
+
+    fn into_elem(self) -> Self::Elem;
+}
+
+pub trait ToAttributes {
+    fn to_attributes(&self, attributes: &mut Attributes);
 }

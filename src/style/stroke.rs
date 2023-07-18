@@ -1,5 +1,5 @@
 use super::color::Color;
-use crate::svg::{keys, Attributes, Value, WriteAttributes};
+use crate::svg::{keys, Attributes, ToAttributes, Value};
 use crate::Scalar;
 
 const DASH: char = '4';
@@ -124,8 +124,8 @@ impl Stroke {
     }
 }
 
-impl WriteAttributes for Stroke {
-    fn write(&self, attributes: &mut Attributes) {
+impl ToAttributes for Stroke {
+    fn to_attributes(&self, attributes: &mut Attributes) {
         if let Some(color) = self.color {
             attributes.insert(keys::STROKE.into(), color.into());
             attributes.insert(
@@ -214,12 +214,12 @@ mod test {
     fn display() {
         let mut attributes = Attributes::new();
         let stroke = Stroke::default();
-        stroke.write(&mut attributes);
+        stroke.to_attributes(&mut attributes);
 
         assert!(attributes.is_empty());
 
         let stroke = Stroke::new().dotted().width(3.5).color(Color::Green);
-        stroke.write(&mut attributes);
+        stroke.to_attributes(&mut attributes);
 
         assert_eq!(
             attributes.get(keys::STROKE).unwrap().clone().deref(),
@@ -243,7 +243,7 @@ mod test {
         );
 
         let stroke = Stroke::new().color(Color::Red).dashdotted().opacity(30);
-        stroke.write(&mut attributes);
+        stroke.to_attributes(&mut attributes);
 
         assert_eq!(attributes.get(keys::STROKE).unwrap().clone().deref(), "red");
         assert_eq!(
@@ -268,7 +268,7 @@ mod test {
             .opacity(124)
             .color(Color::Rgb(10, 20, 30));
 
-        stroke.write(&mut attributes);
+        stroke.to_attributes(&mut attributes);
 
         assert_eq!(
             attributes.get(keys::STROKE).unwrap().clone().deref(),

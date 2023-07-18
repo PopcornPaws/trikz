@@ -1,7 +1,7 @@
 use crate::anchor::{Anchor, AnchorT};
-use crate::style::{Stroke, Style};
-use crate::svg::{keys, Circle as SvgCircle, IntoElem, WriteAttributes};
-use crate::{Scalar, Vector2};
+use crate::style::Stroke;
+use crate::svg::{keys, Attributes, Circle as SvgCircle, IntoElem, ToAttributes};
+use crate::{into_elem, Scalar, Vector2};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Circle {
@@ -29,18 +29,13 @@ impl Circle {
     }
 }
 
-impl IntoElem for Circle {
-    type Output = SvgCircle;
-    type StyleType = Stroke;
-    fn into_elem(self, style: &Style<Self::StyleType>) -> Self::Output {
-        let mut output = SvgCircle::new()
-            .set(keys::CX, self.origin[0])
-            .set(keys::CY, self.origin[1])
-            .set(keys::RADIUS, self.radius);
+into_elem!(Circle, SvgCircle, Stroke);
 
-        style.write(output.get_attributes_mut());
-
-        output
+impl ToAttributes for Circle {
+    fn to_attributes(&self, attributes: &mut Attributes) {
+        attributes.insert(keys::CX.into(), self.origin[0].into());
+        attributes.insert(keys::CY.into(), self.origin[1].into());
+        attributes.insert(keys::RADIUS.into(), self.radius.into());
     }
 }
 
@@ -74,32 +69,24 @@ fn polar_coordinates(radius: Scalar, angle: Scalar) -> Vector2 {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::style::Color;
     use std::ops::Deref;
 
     #[test]
-    fn into_elem() {
+    fn to_attributes() {
+        let mut attributes = Attributes::new();
         let circle = Circle::new();
-        let style = Style::default();
-        let elem = circle.into_elem(&style);
-        let attributes = elem.get_attributes();
+        circle.to_attributes(&mut attributes);
 
         assert_eq!(attributes.get(keys::CX).unwrap().clone().deref(), "0");
         assert_eq!(attributes.get(keys::CY).unwrap().clone().deref(), "0");
         assert_eq!(attributes.get(keys::RADIUS).unwrap().clone().deref(), "0");
-        assert!(attributes.get(keys::FILL).is_none());
-        assert!(attributes.get(keys::STROKE).is_none());
 
         let circle = Circle::new().at(Vector2::new(12.0, -32.0)).radius(10.0);
-        let style = Style::new().fill(Color::White);
-        let elem = circle.into_elem(&style);
-        let attributes = elem.get_attributes();
+        circle.to_attributes(&mut attributes);
 
         assert_eq!(attributes.get(keys::CX).unwrap().clone().deref(), "12");
         assert_eq!(attributes.get(keys::CY).unwrap().clone().deref(), "-32");
         assert_eq!(attributes.get(keys::RADIUS).unwrap().clone().deref(), "10");
-        assert_eq!(attributes.get(keys::FILL).unwrap().clone().deref(), "white");
-        assert!(attributes.get(keys::STROKE).is_none());
     }
 
     #[test]

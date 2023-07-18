@@ -1,4 +1,4 @@
-use crate::svg::{keys, Attributes, Value, WriteAttributes};
+use crate::svg::{keys, Attributes, ToAttributes, Value};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Font {
@@ -63,8 +63,8 @@ pub enum FontSize {
     XXXL,
 }
 
-impl WriteAttributes for Font {
-    fn write(&self, attributes: &mut Attributes) {
+impl ToAttributes for Font {
+    fn to_attributes(&self, attributes: &mut Attributes) {
         attributes.insert(keys::FONT_SIZE.into(), self.size.into());
     }
 }
@@ -129,7 +129,7 @@ mod test {
     fn write_attribute() {
         let mut attributes = Attributes::new();
         let font = Font::default();
-        font.write(&mut attributes);
+        font.to_attributes(&mut attributes);
 
         assert_eq!(
             attributes.get(keys::FONT_SIZE).unwrap().clone().deref(),

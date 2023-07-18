@@ -122,8 +122,14 @@ mod test {
         assert_eq!(Segment::VerticalLine(rel[1]).to_string(), "v -2.5");
         assert_eq!(Segment::HorizontalLineTo(abs[0]).to_string(), "H 1");
         assert_eq!(Segment::HorizontalLine(rel[0]).to_string(), "h 1.5");
-        assert_eq!(Segment::CurveTo(c1, c2, abs).to_string(), "C -10 20, 1 0, 1 2");
-        assert_eq!(Segment::Curve(c1, c2, rel).to_string(), "c -10 20, 1 0, 1.5 -2.5");
+        assert_eq!(
+            Segment::CurveTo(c1, c2, abs).to_string(),
+            "C -10 20, 1 0, 1 2"
+        );
+        assert_eq!(
+            Segment::Curve(c1, c2, rel).to_string(),
+            "c -10 20, 1 0, 1.5 -2.5"
+        );
         assert_eq!(Segment::Close.to_string(), "Z");
     }
 }

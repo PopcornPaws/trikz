@@ -69,4 +69,3 @@ pub enum Anchor {
     NorthWest,
     Polar { radius: Scalar, angle: Scalar },
 }
-

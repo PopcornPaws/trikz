@@ -1,7 +1,7 @@
 use crate::anchor::{Anchor, AnchorT};
-use crate::style::{Stroke, Style};
-use crate::svg::{keys, IntoElem, Rectangle as SvgRectangle, WriteAttributes};
-use crate::{Scalar, Vector2};
+use crate::style::Stroke;
+use crate::svg::{keys, Attributes, IntoElem, Rectangle as SvgRectangle, ToAttributes};
+use crate::{into_elem, Scalar, Vector2};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Rectangle {
@@ -53,20 +53,15 @@ impl Rectangle {
     }
 }
 
-impl IntoElem for Rectangle {
-    type Output = SvgRectangle;
-    type StyleType = Stroke;
-    fn into_elem(self, style: &Style<Self::StyleType>) -> Self::Output {
-        let mut output = SvgRectangle::new()
-            .set(keys::X, self.origin[0])
-            .set(keys::Y, self.origin[1])
-            .set(keys::WIDTH, self.width)
-            .set(keys::HEIGHT, self.height)
-            .set(keys::CORNER, self.corner_radius);
+into_elem!(Rectangle, SvgRectangle, Stroke);
 
-        style.write(output.get_attributes_mut());
-
-        output
+impl ToAttributes for Rectangle {
+    fn to_attributes(&self, attributes: &mut Attributes) {
+        attributes.insert(keys::X.into(), self.origin[0].into());
+        attributes.insert(keys::Y.into(), self.origin[1].into());
+        attributes.insert(keys::WIDTH.into(), self.width.into());
+        attributes.insert(keys::HEIGHT.into(), self.height.into());
+        attributes.insert(keys::CORNER.into(), self.corner_radius.into());
     }
 }
 
@@ -96,49 +91,33 @@ impl AnchorT for Rectangle {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::style::{Color, Stroke};
-
     use std::ops::Deref;
 
     #[test]
-    fn into_elem() {
+    fn to_attributes() {
+        let mut attributes = Attributes::new();
+
         let rectangle = Rectangle::new()
             .at(Vector2::new(10.0, 20.0))
             .width(10.0)
             .height(100.0)
             .rounded_corners(4.0);
-
-        let style = Style::default();
-
-        let elem = rectangle.into_elem(&style);
-        let attributes = elem.get_attributes();
+        rectangle.to_attributes(&mut attributes);
 
         assert_eq!(attributes.get(keys::X).unwrap().clone().deref(), "10");
         assert_eq!(attributes.get(keys::Y).unwrap().clone().deref(), "20");
         assert_eq!(attributes.get(keys::WIDTH).unwrap().clone().deref(), "10");
         assert_eq!(attributes.get(keys::HEIGHT).unwrap().clone().deref(), "100");
         assert_eq!(attributes.get(keys::CORNER).unwrap().clone().deref(), "4");
-        assert!(attributes.get(keys::FILL).is_none());
-        assert!(attributes.get(keys::STROKE).is_none());
 
         let rectangle = Rectangle::new();
-
-        let stroke = Stroke::new().dashed().color(Color::Magenta);
-        let style = Style::new().fill(Color::Green).stroke(stroke);
-
-        let elem = rectangle.into_elem(&style);
-        let attributes = elem.get_attributes();
+        rectangle.to_attributes(&mut attributes);
 
         assert_eq!(attributes.get(keys::X).unwrap().clone().deref(), "0");
         assert_eq!(attributes.get(keys::Y).unwrap().clone().deref(), "0");
         assert_eq!(attributes.get(keys::WIDTH).unwrap().clone().deref(), "0");
         assert_eq!(attributes.get(keys::HEIGHT).unwrap().clone().deref(), "0");
         assert_eq!(attributes.get(keys::CORNER).unwrap().clone().deref(), "0");
-        assert_eq!(attributes.get(keys::FILL).unwrap().clone().deref(), "green");
-        assert_eq!(
-            attributes.get(keys::STROKE).unwrap().clone().deref(),
-            "magenta"
-        );
     }
 
     #[test]

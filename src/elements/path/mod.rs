@@ -1,8 +1,8 @@
 mod segment;
 
-use crate::style::{Stroke, Style};
-use crate::svg::{keys, IntoElem, Path as SvgPath, Value, WriteAttributes};
-use crate::{Scalar, Vector2};
+use crate::style::Stroke;
+use crate::svg::{keys, Attributes, IntoElem, Path as SvgPath, ToAttributes, Value};
+use crate::{into_elem, Scalar, Vector2};
 use segment::Segment;
 
 #[derive(Clone, Debug)]
@@ -103,10 +103,10 @@ impl Path {
     }
 }
 
-impl From<Path> for Value {
-    fn from(path: Path) -> Value {
-        path.into_segments()
-            .into_iter()
+impl From<&Path> for Value {
+    fn from(path: &Path) -> Value {
+        path.segments()
+            .iter()
             .map(|x| x.to_string())
             .collect::<Vec<String>>()
             .join(" ")
@@ -114,15 +114,11 @@ impl From<Path> for Value {
     }
 }
 
-impl IntoElem for Path {
-    type Output = SvgPath;
-    type StyleType = Stroke;
-    fn into_elem(self, style: &Style<Self::StyleType>) -> Self::Output {
-        let mut path = SvgPath::new().set(keys::PATH, Value::from(self));
+into_elem!(Path, SvgPath, Stroke);
 
-        style.write(path.get_attributes_mut());
-
-        path
+impl ToAttributes for Path {
+    fn to_attributes(&self, attributes: &mut Attributes) {
+        attributes.insert(keys::PATH.into(), Value::from(self));
     }
 }
 
@@ -212,7 +208,7 @@ mod test {
             .close();
 
         assert_eq!(
-            Value::from(path).deref(),
+            Value::from(&path).deref(),
             Value::from("M -1.75 -2.5 v 4 h -12.34 m 1 -1 C 100 0, -0 -200, 0 0 Z").deref(),
         );
     }
