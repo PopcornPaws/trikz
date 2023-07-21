@@ -1,13 +1,21 @@
 mod circle;
+mod line;
 mod rectangle;
 
 use circle::Circle;
+use line::Line;
 use rectangle::Rectangle;
 
 use crate::svgutils::raw::{self, Node};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
+//use std::marker::PhantomData;
+
+//struct ElemRef<T>{
+//    elem: Rc<RefCell<raw::Element>>,
+//    ty: PhantomData<T>,
+//}
 
 pub struct Document {
     elements: Vec<Rc<RefCell<raw::Element>>>,
@@ -33,6 +41,15 @@ impl Document {
         self.elements.push(Rc::new(RefCell::new(elem)));
         let index = self.elements.len() - 1;
         Rectangle::new(Rc::clone(&self.elements[index]))
+    }
+
+    pub fn line(&mut self) -> Line {
+        // cloning is cheap because the rectangle is empty
+        // but we need it as an Element, not as a rectangle type
+        let elem = raw::Line::new().deref().clone();
+        self.elements.push(Rc::new(RefCell::new(elem)));
+        let index = self.elements.len() - 1;
+        Line::new(Rc::clone(&self.elements[index]))
     }
 
     pub fn finalize(self) -> raw::Document {

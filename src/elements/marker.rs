@@ -2,13 +2,13 @@ use crate::elements::{Path, PathBuilder};
 use crate::svgutils::{keys, Attributes, IntoElem, Marker as SvgMarker, Node, ToAttributes};
 use crate::{Scalar, Vector2};
 
-pub struct Marker<T> {
-    id: String,
-    height: Scalar,
-    width: Scalar,
-    orient: Option<Scalar>, // optional angle, default: auto-start-reverse
-    elem: T,
-}
+pub struct Marker();
+//{
+//    id: String,
+//    height: Scalar,
+//    width: Scalar,
+//    elem: T,
+//}
 
 impl<T> Marker<T> {
     pub fn new(id: String, elem: T) -> Self {

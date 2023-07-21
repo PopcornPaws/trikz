@@ -42,6 +42,21 @@ impl Circle {
         self
     }
 
+    // TODO add this to each primitive, to expose "unsafe" methods?
+    //pub fn set<T: Into<raw::Value>>(self, key: String, value: T) -> Self {
+    //    let cloned_ref = Rc::clone(&self.0);
+    //    let mut element = cloned_ref.borrow_mut();
+    //    let attributes = element.get_attributes_mut();
+    //    attributes.insert(key, value.into());
+    //    self
+    //}
+
+    pub fn with_style(&self, style: &Style<Stroke>) {
+        let mut element = self.0.borrow_mut();
+        let attributes = element.get_attributes_mut();
+        style.to_attributes(attributes);
+    }
+
     fn geometry(&self) -> Geometry {
         let element = self.0.borrow();
         let attributes = element.get_attributes();
