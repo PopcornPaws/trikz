@@ -49,6 +49,15 @@ impl<T> Marker<T> {
             elem: self.elem,
         }
     }
+
+    pub fn arrow() -> Self {
+        let elem = PathBuilder::start(Vector2::zeros())
+            .line_to(Vector2::new(10.0, 5.0))
+            .line_to(Vector2::new(0.0, 10.0))
+            .close();
+
+        Self::new("arrow".to_string(), elem)
+    }
 }
 
 impl<T> ToAttributes for Marker<T> {
