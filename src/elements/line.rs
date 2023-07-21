@@ -1,50 +1,49 @@
-use crate::style::{Stroke, Style};
-use crate::svgutils::{keys, raw, ToAttributes};
+use super::{Element, ReprT};
+use crate::svgutils::keys;
 use crate::Vector2;
-use std::cell::RefCell;
-use std::rc::Rc;
 
-pub struct Line(Rc<RefCell<raw::Element>>);
+pub struct Line;
 
-impl Line {
-    pub fn new(inner: Rc<RefCell<raw::Element>>) -> Self {
-        Self(inner)
-    }
+impl ReprT for Line {
+    type Repr = crate::style::Stroke;
+}
 
+impl Element<Line> {
     pub fn start(self, start: Vector2) -> Self {
-        let cloned_ref = Rc::clone(&self.0);
-        let mut element = cloned_ref.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        attributes.insert(keys::X1.into(), start[0].into());
-        attributes.insert(keys::Y1.into(), start[1].into());
+        self.insert_multi(
+            [keys::X1.into(), keys::Y1.into()]
+                .into_iter()
+                .zip(start.iter().copied()),
+        );
         self
     }
 
     pub fn end(self, end: Vector2) -> Self {
-        let cloned_ref = Rc::clone(&self.0);
-        let mut element = cloned_ref.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        attributes.insert(keys::X2.into(), end[0].into());
-        attributes.insert(keys::Y2.into(), end[1].into());
+        self.insert_multi(
+            [keys::X2.into(), keys::Y2.into()]
+                .into_iter()
+                .zip(end.iter().copied()),
+        );
         self
     }
 
-    pub fn with_style(&self, style: &Style<Stroke>) {
-        let mut element = self.0.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        style.to_attributes(attributes);
+    pub fn marker(self, id: String) -> Self {
+        todo!("{id}")
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::svgutils::raw;
+    use std::cell::RefCell;
     use std::ops::Deref;
+    use std::rc::Rc;
 
     #[test]
     fn create_and_modify() {
         let elem = Rc::new(RefCell::new(raw::Line::new().deref().clone()));
-        let _ = Line::new(Rc::clone(&elem))
+        let _ = Element::<Line>::new(Rc::clone(&elem))
             .start(Vector2::new(-2.0, 3.0))
             .end(Vector2::new(5.0, 6.5));
 

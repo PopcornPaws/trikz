@@ -1,13 +1,15 @@
+use super::{Element, ReprT};
 use crate::anchor::{Anchor, AnchorT};
-use crate::style::{Stroke, Style};
-use crate::svgutils::{keys, raw, ToAttributes};
+use crate::svgutils::keys;
 use crate::{Scalar, Vector2};
-use std::cell::RefCell;
 use std::ops::Deref;
-use std::rc::Rc;
 use std::str::FromStr;
 
-pub struct Rectangle(Rc<RefCell<raw::Element>>);
+pub struct Rectangle;
+
+impl ReprT for Rectangle {
+    type Repr = crate::style::Stroke;
+}
 
 struct Geometry {
     origin: Vector2,
@@ -15,58 +17,33 @@ struct Geometry {
     width: Scalar,
 }
 
-impl Rectangle {
-    pub fn new(inner: Rc<RefCell<raw::Element>>) -> Self {
-        Self(inner)
-    }
-
-    /// Clones specifically the underlying data behind an Rc and not the Rc itself.
-    pub fn like(self, other: Self) -> Self {
-        self.0.as_ref().replace(other.0.as_ref().borrow().clone());
-        self
-    }
-
+impl Element<Rectangle> {
     pub fn at(self, origin: Vector2) -> Self {
-        let cloned_ref = Rc::clone(&self.0);
-        let mut element = cloned_ref.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        attributes.insert(keys::X.into(), origin[0].into());
-        attributes.insert(keys::Y.into(), origin[1].into());
+        self.insert_multi(
+            [keys::X.into(), keys::Y.into()]
+                .into_iter()
+                .zip(origin.iter().copied()),
+        );
         self
     }
 
     pub fn width(self, width: Scalar) -> Self {
-        let cloned_ref = Rc::clone(&self.0);
-        let mut element = cloned_ref.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        attributes.insert(keys::WIDTH.into(), width.into());
+        self.insert(keys::WIDTH.into(), width);
         self
     }
 
     pub fn height(self, height: Scalar) -> Self {
-        let cloned_ref = Rc::clone(&self.0);
-        let mut element = cloned_ref.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        attributes.insert(keys::HEIGHT.into(), height.into());
+        self.insert(keys::HEIGHT.into(), height);
         self
     }
 
     pub fn rounded_corners(self, corner_radius: Scalar) -> Self {
-        let cloned_ref = Rc::clone(&self.0);
-        let mut element = cloned_ref.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        attributes.insert(keys::CORNER_RADIUS.into(), corner_radius.into());
+        self.insert(keys::CORNER_RADIUS.into(), corner_radius);
         self
     }
 
-    pub fn with_style(&self, style: &Style<Stroke>) {
-        let mut element = self.0.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        style.to_attributes(attributes);
-    }
-
     fn geometry(&self) -> Geometry {
-        let element = self.0.borrow();
+        let element = self.elem.borrow();
         let attributes = element.get_attributes();
 
         let x = attributes
@@ -97,13 +74,7 @@ impl Rectangle {
     }
 }
 
-impl Clone for Rectangle {
-    fn clone(&self) -> Self {
-        Self(Rc::clone(&self.0))
-    }
-}
-
-impl AnchorT for Rectangle {
+impl AnchorT for Element<Rectangle> {
     fn anchor(&self, anchor: Anchor) -> Vector2 {
         // positive X is right (east)
         // positive Y is up (north)
@@ -138,12 +109,17 @@ impl AnchorT for Rectangle {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::svgutils::raw;
+    use std::cell::RefCell;
+    use std::rc::Rc;
 
     #[test]
     fn create_and_modify() {
         let elem = Rc::new(RefCell::new(raw::Rectangle::new().deref().clone()));
 
-        let rect = Rectangle::new(Rc::clone(&elem)).width(1.5).height(2.0);
+        let rect = Element::<Rectangle>::new(Rc::clone(&elem))
+            .width(1.5)
+            .height(2.0);
 
         let geometry = rect.geometry();
         assert_eq!(geometry.height, 2.0);
@@ -151,7 +127,7 @@ mod test {
         assert_eq!(geometry.origin, Vector2::zeros());
 
         let other_elem = Rc::new(RefCell::new(raw::Rectangle::new().deref().clone()));
-        let other_rect = Rectangle::new(Rc::clone(&other_elem))
+        let other_rect = Element::<Rectangle>::new(Rc::clone(&other_elem))
             .like(rect.clone())
             .at(Vector2::new(10.0, 20.0))
             .rounded_corners(0.5);
@@ -183,7 +159,7 @@ mod test {
     #[test]
     fn anchors() {
         let elem = raw::Rectangle::new().deref().clone();
-        let rectangle = Rectangle::new(Rc::new(RefCell::new(elem)))
+        let rectangle = Element::<Rectangle>::new(Rc::new(RefCell::new(elem)))
             .width(8.0)
             .height(6.0);
         assert_eq!(rectangle.origin(), Vector2::zeros());

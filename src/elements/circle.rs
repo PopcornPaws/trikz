@@ -1,64 +1,38 @@
+use super::{Element, ReprT};
 use crate::anchor::{Anchor, AnchorT};
-use crate::style::{Stroke, Style};
-use crate::svgutils::{keys, raw, ToAttributes};
+use crate::svgutils::keys;
 use crate::{Scalar, Vector2};
-use std::cell::RefCell;
 use std::ops::Deref;
-use std::rc::Rc;
 use std::str::FromStr;
 
-pub struct Circle(Rc<RefCell<raw::Element>>);
+pub struct Circle;
+
+impl ReprT for Circle {
+    type Repr = crate::style::Stroke;
+}
 
 struct Geometry {
     origin: Vector2,
     radius: Scalar,
 }
 
-impl Circle {
-    pub fn new(inner: Rc<RefCell<raw::Element>>) -> Self {
-        Self(inner)
-    }
-
-    /// Clones specifically the underlying data behind an Rc and not the Rc itself.
-    pub fn like(self, other: Self) -> Self {
-        self.0.as_ref().replace(other.0.as_ref().borrow().clone());
-        self
-    }
-
+impl Element<Circle> {
     pub fn at(self, origin: Vector2) -> Self {
-        let cloned_ref = Rc::clone(&self.0);
-        let mut element = cloned_ref.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        attributes.insert(keys::CX.into(), origin[0].into());
-        attributes.insert(keys::CY.into(), origin[1].into());
+        self.insert_multi(
+            [keys::CX.into(), keys::CY.into()]
+                .into_iter()
+                .zip(origin.iter().copied()),
+        );
         self
     }
 
     pub fn radius(self, radius: Scalar) -> Self {
-        let cloned_ref = Rc::clone(&self.0);
-        let mut element = cloned_ref.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        attributes.insert(keys::RADIUS.into(), radius.into());
+        self.insert(keys::RADIUS.into(), radius);
         self
     }
 
-    // TODO add this to each primitive, to expose "unsafe" methods?
-    //pub fn set<T: Into<raw::Value>>(self, key: String, value: T) -> Self {
-    //    let cloned_ref = Rc::clone(&self.0);
-    //    let mut element = cloned_ref.borrow_mut();
-    //    let attributes = element.get_attributes_mut();
-    //    attributes.insert(key, value.into());
-    //    self
-    //}
-
-    pub fn with_style(&self, style: &Style<Stroke>) {
-        let mut element = self.0.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        style.to_attributes(attributes);
-    }
-
     fn geometry(&self) -> Geometry {
-        let element = self.0.borrow();
+        let element = self.elem.borrow();
         let attributes = element.get_attributes();
 
         let x = attributes
@@ -83,13 +57,7 @@ impl Circle {
     }
 }
 
-impl Clone for Circle {
-    fn clone(&self) -> Self {
-        Self(Rc::clone(&self.0))
-    }
-}
-
-impl AnchorT for Circle {
+impl AnchorT for Element<Circle> {
     fn anchor(&self, anchor: Anchor) -> Vector2 {
         // positive X is right (east)
         // positive Y is up (north)
@@ -120,18 +88,21 @@ fn polar_coordinates(radius: Scalar, angle: Scalar) -> Vector2 {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::svgutils::raw;
+    use std::cell::RefCell;
+    use std::rc::Rc;
 
     #[test]
     fn create_and_modify() {
         let elem = Rc::new(RefCell::new(raw::Circle::new().deref().clone()));
-        let circ = Circle::new(Rc::clone(&elem)).radius(5.0);
+        let circ = Element::<Circle>::new(Rc::clone(&elem)).radius(5.0);
 
         let geometry = circ.geometry();
         assert_eq!(geometry.origin, Vector2::zeros());
         assert_eq!(geometry.radius, 5.0);
 
         let other_elem = Rc::new(RefCell::new(raw::Circle::new().deref().clone()));
-        let other_circ = Circle::new(Rc::clone(&other_elem))
+        let other_circ = Element::<Circle>::new(Rc::clone(&other_elem))
             .like(circ.clone())
             .at(Vector2::new(12.0, -32.5));
 
@@ -149,7 +120,7 @@ mod test {
 
         let elem = Rc::new(RefCell::new(raw::Circle::new().deref().clone()));
 
-        let circle = Circle::new(Rc::clone(&elem)).radius(radius);
+        let circle = Element::<Circle>::new(Rc::clone(&elem)).radius(radius);
         assert_eq!(circle.origin(), Vector2::zeros());
         assert_eq!(circle.north(), Vector2::new(0.0, radius));
         assert_eq!(circle.northeast(), Vector2::new(xr, yr));
