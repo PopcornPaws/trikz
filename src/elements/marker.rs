@@ -1,5 +1,6 @@
+use crate::elements::{Path, PathBuilder};
 use crate::svgutils::{keys, Attributes, IntoElem, Marker as SvgMarker, Node, ToAttributes};
-use crate::Scalar;
+use crate::{Scalar, Vector2};
 
 pub struct Marker<T> {
     id: String,
@@ -49,7 +50,9 @@ impl<T> Marker<T> {
             elem: self.elem,
         }
     }
+}
 
+impl Marker<Path> {
     pub fn arrow() -> Self {
         let elem = PathBuilder::start(Vector2::zeros())
             .line_to(Vector2::new(10.0, 5.0))
