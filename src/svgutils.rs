@@ -1,7 +1,7 @@
 use crate::style::Style;
 
-pub use svglib::node::element::*;
-pub use svglib::node::{Attributes, Node, Value};
+pub use svg::node::element::*;
+pub use svg::node::{Attributes, Node, Value};
 
 use std::marker::PhantomData;
 use std::ops::DerefMut;

@@ -4,7 +4,7 @@
 pub mod anchor;
 pub mod elements;
 pub mod style;
-pub mod svg;
+pub mod svgutils;
 
 // TODO move these to prelude?
 macro_rules! scalar {

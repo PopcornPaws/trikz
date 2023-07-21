@@ -1,7 +1,5 @@
-use crate::svg::{keys, Attributes, IntoElem, Marker as SvgMarker, Node, ToAttributes};
+use crate::svgutils::{keys, Attributes, IntoElem, Marker as SvgMarker, Node, ToAttributes};
 use crate::Scalar;
-
-pub struct Arrow(Marker<Path>);
 
 pub struct Marker<T> {
     id: String,
@@ -85,7 +83,5 @@ where
 
 #[cfg(test)]
 mod test {
-    use super::*;
-
     // TODO
 }

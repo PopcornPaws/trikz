@@ -1,4 +1,8 @@
 // TODO this is what I eventually want
+
+fn main() {
+    todo!()
+}
 /*
 use trikz::{Rectangle, Circle, Arrow};
 

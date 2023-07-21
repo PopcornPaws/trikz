@@ -1,5 +1,5 @@
 use super::color::Color;
-use crate::svg::{keys, Attributes, ToAttributes, Value};
+use crate::svgutils::{keys, Attributes, ToAttributes, Value};
 use crate::Scalar;
 
 const DASH: char = '4';
@@ -97,7 +97,7 @@ impl Stroke {
             markers: self.markers,
             opacity: self.opacity,
             width: self.width,
-            style: StrokeStyle::Dotted,
+            style: self.style,
         }
     }
 
@@ -108,7 +108,7 @@ impl Stroke {
             markers: self.markers,
             opacity: self.opacity,
             width: self.width,
-            style: StrokeStyle::Dotted,
+            style: self.style,
         }
     }
 
@@ -119,7 +119,7 @@ impl Stroke {
             markers: self.markers,
             opacity: self.opacity,
             width: self.width,
-            style: StrokeStyle::Dotted,
+            style: self.style,
         }
     }
 }
@@ -198,16 +198,24 @@ mod test {
         assert_eq!(stroke.opacity, 30);
         assert_eq!(stroke.width, 1.0);
         assert_eq!(stroke.style, StrokeStyle::Dashdotted);
+        assert_eq!(stroke.markers, [None, None, None]);
 
+        let sm = "start-marker".to_string();
+        let mm = "mid-marker".to_string();
+        let em = "end-marker".to_string();
         let stroke = Stroke::new()
             .dashed()
             .opacity(124)
+            .marker_mid(mm.clone())
+            .marker_end(em.clone())
+            .marker_start(sm.clone())
             .color(Color::Rgb(10, 20, 30));
 
         assert_eq!(stroke.color, Some(Color::Rgb(10, 20, 30)));
         assert_eq!(stroke.opacity, 100);
         assert_eq!(stroke.width, 1.0);
         assert_eq!(stroke.style, StrokeStyle::Dashed);
+        assert_eq!(stroke.markers, [Some(sm), Some(mm), Some(em)]);
     }
 
     #[test]
@@ -263,9 +271,11 @@ mod test {
             format!("{} {} {} {}", DASH, DOT, DASH, DOT)
         );
 
+        let marker_id = "arrow".to_string();
         let stroke = Stroke::new()
             .dashed()
             .opacity(124)
+            .marker_end(marker_id.clone())
             .color(Color::Rgb(10, 20, 30));
 
         stroke.to_attributes(&mut attributes);
@@ -289,6 +299,10 @@ mod test {
         assert_eq!(
             attributes.get(keys::STROKE_STYLE).unwrap().clone().deref(),
             format!("{} {}", DASH, DOT)
+        );
+        assert_eq!(
+            attributes.get(keys::MARKERS[2]).unwrap().clone().deref(),
+            format!("url(#{})", marker_id)
         );
     }
 }

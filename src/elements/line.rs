@@ -1,5 +1,5 @@
 use crate::style::Stroke;
-use crate::svg::{keys, Attributes, IntoElem, Line as SvgLine, ToAttributes};
+use crate::svgutils::{keys, Attributes, IntoElem, Line as SvgLine, ToAttributes};
 use crate::{into_elem, Vector2};
 
 #[derive(Clone, Copy, Debug)]

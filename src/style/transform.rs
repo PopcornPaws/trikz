@@ -1,4 +1,4 @@
-use crate::svg::Value;
+use crate::svgutils::Value;
 use crate::{Scalar, Vector2};
 
 pub trait Transform {

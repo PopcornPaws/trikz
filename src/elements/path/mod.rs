@@ -1,7 +1,7 @@
 mod segment;
 
 use crate::style::Stroke;
-use crate::svg::{keys, Attributes, IntoElem, Path as SvgPath, ToAttributes, Value};
+use crate::svgutils::{keys, Attributes, IntoElem, Path as SvgPath, ToAttributes, Value};
 use crate::{into_elem, Scalar, Vector2};
 use segment::Segment;
 

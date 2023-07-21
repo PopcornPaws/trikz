@@ -1,6 +1,6 @@
 use crate::anchor::{Anchor, AnchorT};
 use crate::style::Stroke;
-use crate::svg::{keys, Attributes, Circle as SvgCircle, IntoElem, ToAttributes};
+use crate::svgutils::{keys, Attributes, Circle as SvgCircle, IntoElem, ToAttributes};
 use crate::{into_elem, Scalar, Vector2};
 
 #[derive(Clone, Copy, Debug, Default)]
