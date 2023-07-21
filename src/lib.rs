@@ -54,24 +54,6 @@ macro_rules! xy {
     };
 }
 
-// NOTE only works with types without generics
-// could be a proc_macro_attribute instead with
-// some input arguments
-#[macro_export]
-macro_rules! into_elem {
-    ($wrapper:ty, $elem:ty, $repr:ty) => {
-        impl IntoElem for $wrapper {
-            type Elem = $elem;
-            type Repr = $repr;
-            fn into_elem(self) -> Self::Elem {
-                let mut elem = Self::Elem::new();
-                self.to_attributes(elem.get_attributes_mut());
-                elem
-            }
-        }
-    };
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -94,7 +76,6 @@ mod test {
 
 // TODO
 // - text
-// - line
 // - arrow
-// - marker
-// - path
+// - a vec![] like macro that implements setter and getter functions for
+//   primitive types (like x, y, cx, cy, radius, etc)

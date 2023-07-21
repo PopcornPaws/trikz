@@ -1,4 +1,4 @@
-use crate::svgutils::Value;
+use crate::svgutils::raw::Value;
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]
 pub enum Color {

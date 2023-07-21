@@ -6,7 +6,7 @@ pub use color::Color;
 pub use font::Font;
 pub use stroke::Stroke;
 
-use crate::svgutils::{keys, Attributes, ToAttributes};
+use crate::svgutils::{keys, raw::Attributes, ToAttributes};
 
 #[derive(Clone, Debug)]
 pub struct Style<T> {

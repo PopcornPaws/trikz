@@ -1,41 +1,76 @@
 use crate::anchor::{Anchor, AnchorT};
-use crate::style::Stroke;
-use crate::svgutils::{keys, Attributes, Circle as SvgCircle, IntoElem, ToAttributes};
-use crate::{into_elem, Scalar, Vector2};
+use crate::style::{Stroke, Style};
+use crate::svgutils::{keys, raw, ToAttributes};
+use crate::{Scalar, Vector2};
+use std::cell::RefCell;
+use std::ops::Deref;
+use std::rc::Rc;
+use std::str::FromStr;
 
-#[derive(Clone, Copy, Debug, Default)]
-pub struct Circle {
-    pub origin: Vector2,
-    pub radius: Scalar,
+pub struct Circle(Rc<RefCell<raw::Element>>);
+
+struct Geometry {
+    origin: Vector2,
+    radius: Scalar,
 }
 
 impl Circle {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(inner: Rc<RefCell<raw::Element>>) -> Self {
+        Self(inner)
+    }
+
+    /// Clones specifically the underlying data behind an Rc and not the Rc itself.
+    pub fn like(self, other: Self) -> Self {
+        self.0.as_ref().replace(other.0.as_ref().borrow().clone());
+        self
     }
 
     pub fn at(self, origin: Vector2) -> Self {
-        Self {
-            origin,
-            radius: self.radius,
-        }
+        let cloned_ref = Rc::clone(&self.0);
+        let mut element = cloned_ref.borrow_mut();
+        let attributes = element.get_attributes_mut();
+        attributes.insert(keys::CX.into(), origin[0].into());
+        attributes.insert(keys::CY.into(), origin[1].into());
+        self
     }
 
     pub fn radius(self, radius: Scalar) -> Self {
-        Self {
-            origin: self.origin,
+        let cloned_ref = Rc::clone(&self.0);
+        let mut element = cloned_ref.borrow_mut();
+        let attributes = element.get_attributes_mut();
+        attributes.insert(keys::RADIUS.into(), radius.into());
+        self
+    }
+
+    fn geometry(&self) -> Geometry {
+        let element = self.0.borrow();
+        let attributes = element.get_attributes();
+
+        let x = attributes
+            .get(keys::CX)
+            .and_then(|x| Scalar::from_str(x.deref()).ok())
+            .unwrap_or_default();
+
+        let y = attributes
+            .get(keys::CY)
+            .and_then(|x| Scalar::from_str(x.deref()).ok())
+            .unwrap_or_default();
+
+        let radius = attributes
+            .get(keys::RADIUS)
+            .and_then(|x| Scalar::from_str(x.deref()).ok())
+            .unwrap_or_default();
+
+        Geometry {
+            origin: Vector2::new(x, y),
             radius,
         }
     }
 }
 
-into_elem!(Circle, SvgCircle, Stroke);
-
-impl ToAttributes for Circle {
-    fn to_attributes(&self, attributes: &mut Attributes) {
-        attributes.insert(keys::CX.into(), self.origin[0].into());
-        attributes.insert(keys::CY.into(), self.origin[1].into());
-        attributes.insert(keys::RADIUS.into(), self.radius.into());
+impl Clone for Circle {
+    fn clone(&self) -> Self {
+        Self(Rc::clone(&self.0))
     }
 }
 
@@ -43,20 +78,21 @@ impl AnchorT for Circle {
     fn anchor(&self, anchor: Anchor) -> Vector2 {
         // positive X is right (east)
         // positive Y is up (north)
+        let geometry = self.geometry();
         let (radius, angle) = match anchor {
-            Anchor::Origin => return self.origin,
-            Anchor::North => return self.origin + Vector2::y() * self.radius,
-            Anchor::East => return self.origin + Vector2::x() * self.radius,
-            Anchor::South => return self.origin + Vector2::y() * (-self.radius),
-            Anchor::West => return self.origin + Vector2::x() * (-self.radius),
-            Anchor::NorthEast => (self.radius, 45.0),
-            Anchor::SouthEast => (self.radius, -45.0),
-            Anchor::SouthWest => (self.radius, -135.0),
-            Anchor::NorthWest => (self.radius, 135.0),
+            Anchor::Origin => return geometry.origin,
+            Anchor::North => return geometry.origin + Vector2::y() * geometry.radius,
+            Anchor::East => return geometry.origin + Vector2::x() * geometry.radius,
+            Anchor::South => return geometry.origin + Vector2::y() * (-geometry.radius),
+            Anchor::West => return geometry.origin + Vector2::x() * (-geometry.radius),
+            Anchor::NorthEast => (geometry.radius, 45.0),
+            Anchor::SouthEast => (geometry.radius, -45.0),
+            Anchor::SouthWest => (geometry.radius, -135.0),
+            Anchor::NorthWest => (geometry.radius, 135.0),
             Anchor::Polar { radius, angle } => (radius, angle),
         };
 
-        self.origin + polar_coordinates(radius, angle)
+        geometry.origin + polar_coordinates(radius, angle)
     }
 }
 
@@ -69,24 +105,24 @@ fn polar_coordinates(radius: Scalar, angle: Scalar) -> Vector2 {
 #[cfg(test)]
 mod test {
     use super::*;
-    use std::ops::Deref;
 
     #[test]
-    fn to_attributes() {
-        let mut attributes = Attributes::new();
-        let circle = Circle::new();
-        circle.to_attributes(&mut attributes);
+    fn create_and_modify() {
+        let elem = Rc::new(RefCell::new(raw::Circle::new().deref().clone()));
+        let circ = Circle::new(Rc::clone(&elem)).radius(5.0);
 
-        assert_eq!(attributes.get(keys::CX).unwrap().clone().deref(), "0");
-        assert_eq!(attributes.get(keys::CY).unwrap().clone().deref(), "0");
-        assert_eq!(attributes.get(keys::RADIUS).unwrap().clone().deref(), "0");
+        let geometry = circ.geometry();
+        assert_eq!(geometry.origin, Vector2::zeros());
+        assert_eq!(geometry.radius, 5.0);
 
-        let circle = Circle::new().at(Vector2::new(12.0, -32.0)).radius(10.0);
-        circle.to_attributes(&mut attributes);
+        let other_elem = Rc::new(RefCell::new(raw::Circle::new().deref().clone()));
+        let other_circ = Circle::new(Rc::clone(&other_elem))
+            .like(circ.clone())
+            .at(Vector2::new(12.0, -32.5));
 
-        assert_eq!(attributes.get(keys::CX).unwrap().clone().deref(), "12");
-        assert_eq!(attributes.get(keys::CY).unwrap().clone().deref(), "-32");
-        assert_eq!(attributes.get(keys::RADIUS).unwrap().clone().deref(), "10");
+        let geometry = other_circ.geometry();
+        assert_eq!(geometry.origin, Vector2::new(12.0, -32.5));
+        assert_eq!(geometry.radius, 5.0);
     }
 
     #[test]
@@ -96,7 +132,9 @@ mod test {
         let yr = s * radius;
         let xr = c * radius;
 
-        let circle = Circle::new().radius(radius);
+        let elem = Rc::new(RefCell::new(raw::Circle::new().deref().clone()));
+
+        let circle = Circle::new(Rc::clone(&elem)).radius(radius);
         assert_eq!(circle.origin(), Vector2::zeros());
         assert_eq!(circle.north(), Vector2::new(0.0, radius));
         assert_eq!(circle.northeast(), Vector2::new(xr, yr));

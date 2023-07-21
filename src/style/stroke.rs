@@ -1,5 +1,9 @@
 use super::color::Color;
-use crate::svgutils::{keys, Attributes, ToAttributes, Value};
+use crate::svgutils::{
+    keys,
+    raw::{Attributes, Value},
+    ToAttributes,
+};
 use crate::Scalar;
 
 const DASH: char = '4';

@@ -1,10 +1,8 @@
-use crate::style::Style;
-
-pub use svg::node::element::*;
-pub use svg::node::{Attributes, Node, Value};
-
-use std::marker::PhantomData;
-use std::ops::DerefMut;
+pub mod raw {
+    pub use svg::node::element::*;
+    pub use svg::node::{Attributes, Node, Value};
+    pub use svg::Document;
+}
 
 pub mod keys {
     pub const X: &str = "x";
@@ -13,7 +11,7 @@ pub mod keys {
     // rectangle attributes
     pub const WIDTH: &str = "width";
     pub const HEIGHT: &str = "height";
-    pub const CORNER: &str = "rx";
+    pub const CORNER_RADIUS: &str = "rx";
 
     // circle attributes
     pub const CX: &str = "cx";
@@ -50,51 +48,6 @@ pub mod keys {
     pub const MARKER_ORIENT: &str = "orient";
 }
 
-pub struct ElemBuilder<E, R> {
-    elem: E,
-    repr: PhantomData<R>,
-}
-
-impl<E, R, T> From<T> for ElemBuilder<E, R>
-where
-    T: IntoElem<Elem = E, Repr = R>,
-{
-    fn from(wrapper: T) -> Self {
-        Self {
-            elem: wrapper.into_elem(),
-            repr: PhantomData,
-        }
-    }
-}
-
-// TODO should transformation (translation + rotation) methods be included in this impl, or on each
-// element? see src/style/transform.rs it should probably be a trait
-impl<E, R> ElemBuilder<E, R>
-where
-    E: DerefMut<Target = Element>,
-    R: ToAttributes,
-{
-    pub fn with_style(mut self, style: &Style<R>) -> Self {
-        style.to_attributes(self.elem.deref_mut().get_attributes_mut());
-        self
-    }
-
-    pub fn finalize(self) -> E {
-        self.elem
-    }
-}
-
-pub trait IntoElem: ToAttributes {
-    type Elem: DerefMut<Target = Element>;
-    type Repr: ToAttributes;
-
-    fn into_elem(self) -> Self::Elem;
-}
-
 pub trait ToAttributes {
-    fn to_attributes(&self, attributes: &mut Attributes);
-}
-
-impl ToAttributes for () {
-    fn to_attributes(&self, _attributes: &mut Attributes) {}
+    fn to_attributes(&self, attributes: &mut raw::Attributes);
 }

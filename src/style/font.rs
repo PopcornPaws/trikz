@@ -1,4 +1,8 @@
-use crate::svgutils::{keys, Attributes, ToAttributes, Value};
+use crate::svgutils::{
+    keys,
+    raw::{Attributes, Value},
+    ToAttributes,
+};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Font {

@@ -1,67 +1,105 @@
 use crate::anchor::{Anchor, AnchorT};
-use crate::style::Stroke;
-use crate::svgutils::{keys, Attributes, IntoElem, Rectangle as SvgRectangle, ToAttributes};
-use crate::{into_elem, Scalar, Vector2};
+use crate::style::{Stroke, Style};
+use crate::svgutils::{keys, raw, ToAttributes};
+use crate::{Scalar, Vector2};
+use std::cell::RefCell;
+use std::ops::Deref;
+use std::rc::Rc;
+use std::str::FromStr;
 
-#[derive(Clone, Copy, Debug, Default)]
-pub struct Rectangle {
-    pub origin: Vector2,
-    pub width: Scalar,
-    pub height: Scalar,
-    pub corner_radius: Scalar,
+pub struct Rectangle(Rc<RefCell<raw::Element>>);
+
+struct Geometry {
+    origin: Vector2,
+    height: Scalar,
+    width: Scalar,
 }
 
 impl Rectangle {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(inner: Rc<RefCell<raw::Element>>) -> Self {
+        Self(inner)
+    }
+
+    /// Clones specifically the underlying data behind an Rc and not the Rc itself.
+    pub fn like(self, other: Self) -> Self {
+        self.0.as_ref().replace(other.0.as_ref().borrow().clone());
+        self
     }
 
     pub fn at(self, origin: Vector2) -> Self {
-        Self {
-            origin,
-            width: self.width,
-            height: self.height,
-            corner_radius: self.corner_radius,
-        }
+        let cloned_ref = Rc::clone(&self.0);
+        let mut element = cloned_ref.borrow_mut();
+        let attributes = element.get_attributes_mut();
+        attributes.insert(keys::X.into(), origin[0].into());
+        attributes.insert(keys::Y.into(), origin[1].into());
+        self
     }
 
     pub fn width(self, width: Scalar) -> Self {
-        Self {
-            origin: self.origin,
-            width,
-            height: self.height,
-            corner_radius: self.corner_radius,
-        }
+        let cloned_ref = Rc::clone(&self.0);
+        let mut element = cloned_ref.borrow_mut();
+        let attributes = element.get_attributes_mut();
+        attributes.insert(keys::WIDTH.into(), width.into());
+        self
     }
 
     pub fn height(self, height: Scalar) -> Self {
-        Self {
-            origin: self.origin,
-            width: self.width,
-            height,
-            corner_radius: self.corner_radius,
-        }
+        let cloned_ref = Rc::clone(&self.0);
+        let mut element = cloned_ref.borrow_mut();
+        let attributes = element.get_attributes_mut();
+        attributes.insert(keys::HEIGHT.into(), height.into());
+        self
     }
 
     pub fn rounded_corners(self, corner_radius: Scalar) -> Self {
-        Self {
-            origin: self.origin,
-            width: self.width,
-            height: self.height,
-            corner_radius,
+        let cloned_ref = Rc::clone(&self.0);
+        let mut element = cloned_ref.borrow_mut();
+        let attributes = element.get_attributes_mut();
+        attributes.insert(keys::CORNER_RADIUS.into(), corner_radius.into());
+        self
+    }
+
+    pub fn with_style(&self, style: &Style<Stroke>) {
+        let mut element = self.0.borrow_mut();
+        let attributes = element.get_attributes_mut();
+        style.to_attributes(attributes);
+    }
+
+    fn geometry(&self) -> Geometry {
+        let element = self.0.borrow();
+        let attributes = element.get_attributes();
+
+        let x = attributes
+            .get(keys::X)
+            .and_then(|x| Scalar::from_str(x.deref()).ok())
+            .unwrap_or_default();
+
+        let y = attributes
+            .get(keys::Y)
+            .and_then(|x| Scalar::from_str(x.deref()).ok())
+            .unwrap_or_default();
+
+        let height = attributes
+            .get(keys::HEIGHT)
+            .and_then(|x| Scalar::from_str(x.deref()).ok())
+            .unwrap_or_default();
+
+        let width = attributes
+            .get(keys::WIDTH)
+            .and_then(|x| Scalar::from_str(x.deref()).ok())
+            .unwrap_or_default();
+
+        Geometry {
+            origin: Vector2::new(x, y),
+            height,
+            width,
         }
     }
 }
 
-into_elem!(Rectangle, SvgRectangle, Stroke);
-
-impl ToAttributes for Rectangle {
-    fn to_attributes(&self, attributes: &mut Attributes) {
-        attributes.insert(keys::X.into(), self.origin[0].into());
-        attributes.insert(keys::Y.into(), self.origin[1].into());
-        attributes.insert(keys::WIDTH.into(), self.width.into());
-        attributes.insert(keys::HEIGHT.into(), self.height.into());
-        attributes.insert(keys::CORNER.into(), self.corner_radius.into());
+impl Clone for Rectangle {
+    fn clone(&self) -> Self {
+        Self(Rc::clone(&self.0))
     }
 }
 
@@ -69,20 +107,29 @@ impl AnchorT for Rectangle {
     fn anchor(&self, anchor: Anchor) -> Vector2 {
         // positive X is right (east)
         // positive Y is up (north)
+        let geometry = self.geometry();
         match anchor {
-            Anchor::Origin => self.origin,
-            Anchor::North => self.origin + Vector2::new(0.0, self.height / 2.0),
-            Anchor::NorthEast => self.origin + Vector2::new(self.width / 2.0, self.height / 2.0),
-            Anchor::East => self.origin + Vector2::new(self.width / 2.0, 0.0),
-            Anchor::SouthEast => self.origin + Vector2::new(self.width / 2.0, -self.height / 2.0),
-            Anchor::South => self.origin + Vector2::new(0.0, -self.height / 2.0),
-            Anchor::SouthWest => self.origin + Vector2::new(-self.width / 2.0, -self.height / 2.0),
-            Anchor::West => self.origin + Vector2::new(-self.width / 2.0, 0.0),
-            Anchor::NorthWest => self.origin + Vector2::new(-self.width / 2.0, self.height / 2.0),
+            Anchor::Origin => geometry.origin,
+            Anchor::North => geometry.origin + Vector2::new(0.0, geometry.height / 2.0),
+            Anchor::NorthEast => {
+                geometry.origin + Vector2::new(geometry.width / 2.0, geometry.height / 2.0)
+            }
+            Anchor::East => geometry.origin + Vector2::new(geometry.width / 2.0, 0.0),
+            Anchor::SouthEast => {
+                geometry.origin + Vector2::new(geometry.width / 2.0, -geometry.height / 2.0)
+            }
+            Anchor::South => geometry.origin + Vector2::new(0.0, -geometry.height / 2.0),
+            Anchor::SouthWest => {
+                geometry.origin + Vector2::new(-geometry.width / 2.0, -geometry.height / 2.0)
+            }
+            Anchor::West => geometry.origin + Vector2::new(-geometry.width / 2.0, 0.0),
+            Anchor::NorthWest => {
+                geometry.origin + Vector2::new(-geometry.width / 2.0, geometry.height / 2.0)
+            }
             Anchor::Polar { radius, angle } => {
                 let radians = angle * crate::PI / 180.0;
                 let (s, c) = radians.sin_cos();
-                self.origin + Vector2::new(radius * c, radius * s)
+                geometry.origin + Vector2::new(radius * c, radius * s)
             }
         }
     }
@@ -91,38 +138,54 @@ impl AnchorT for Rectangle {
 #[cfg(test)]
 mod test {
     use super::*;
-    use std::ops::Deref;
 
     #[test]
-    fn to_attributes() {
-        let mut attributes = Attributes::new();
+    fn create_and_modify() {
+        let elem = Rc::new(RefCell::new(raw::Rectangle::new().deref().clone()));
 
-        let rectangle = Rectangle::new()
+        let rect = Rectangle::new(Rc::clone(&elem)).width(1.5).height(2.0);
+
+        let geometry = rect.geometry();
+        assert_eq!(geometry.height, 2.0);
+        assert_eq!(geometry.width, 1.5);
+        assert_eq!(geometry.origin, Vector2::zeros());
+
+        let other_elem = Rc::new(RefCell::new(raw::Rectangle::new().deref().clone()));
+        let other_rect = Rectangle::new(Rc::clone(&other_elem))
+            .like(rect.clone())
             .at(Vector2::new(10.0, 20.0))
-            .width(10.0)
-            .height(100.0)
-            .rounded_corners(4.0);
-        rectangle.to_attributes(&mut attributes);
+            .rounded_corners(0.5);
 
-        assert_eq!(attributes.get(keys::X).unwrap().clone().deref(), "10");
-        assert_eq!(attributes.get(keys::Y).unwrap().clone().deref(), "20");
-        assert_eq!(attributes.get(keys::WIDTH).unwrap().clone().deref(), "10");
-        assert_eq!(attributes.get(keys::HEIGHT).unwrap().clone().deref(), "100");
-        assert_eq!(attributes.get(keys::CORNER).unwrap().clone().deref(), "4");
+        // check the original hasn't changed
+        let geometry = rect.geometry();
+        assert_eq!(geometry.height, 2.0);
+        assert_eq!(geometry.width, 1.5);
+        assert_eq!(geometry.origin, Vector2::zeros());
 
-        let rectangle = Rectangle::new();
-        rectangle.to_attributes(&mut attributes);
+        // check the other one
+        let geometry = other_rect.geometry();
+        assert_eq!(geometry.height, 2.0);
+        assert_eq!(geometry.width, 1.5);
+        assert_eq!(geometry.origin, Vector2::new(10.0, 20.0));
 
-        assert_eq!(attributes.get(keys::X).unwrap().clone().deref(), "0");
-        assert_eq!(attributes.get(keys::Y).unwrap().clone().deref(), "0");
-        assert_eq!(attributes.get(keys::WIDTH).unwrap().clone().deref(), "0");
-        assert_eq!(attributes.get(keys::HEIGHT).unwrap().clone().deref(), "0");
-        assert_eq!(attributes.get(keys::CORNER).unwrap().clone().deref(), "0");
+        // check rounded corners
+        assert_eq!(
+            other_elem
+                .borrow()
+                .get_attributes()
+                .get(keys::CORNER_RADIUS)
+                .unwrap()
+                .deref(),
+            "0.5"
+        );
     }
 
     #[test]
     fn anchors() {
-        let rectangle = Rectangle::new().width(8.0).height(6.0);
+        let elem = raw::Rectangle::new().deref().clone();
+        let rectangle = Rectangle::new(Rc::new(RefCell::new(elem)))
+            .width(8.0)
+            .height(6.0);
         assert_eq!(rectangle.origin(), Vector2::zeros());
         assert_eq!(rectangle.north(), Vector2::new(0.0, 3.0));
         assert_eq!(rectangle.northeast(), Vector2::new(4.0, 3.0));
