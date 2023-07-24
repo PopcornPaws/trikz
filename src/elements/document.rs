@@ -1,5 +1,6 @@
 use super::*;
 
+#[derive(Default)]
 pub struct Document {
     elements: Vec<ElemRef>,
 }
@@ -22,12 +23,16 @@ impl Document {
         self.add(raw::Circle::new())
     }
 
-    pub fn rectangle(&mut self) -> Element<Rectangle> {
-        self.add(raw::Rectangle::new())
-    }
-
     pub fn line(&mut self) -> Element<Line> {
         self.add(raw::Line::new())
+    }
+
+    pub fn marker(&mut self) -> Element<Marker> {
+        self.add(raw::Marker::new())
+    }
+
+    pub fn rectangle(&mut self) -> Element<Rectangle> {
+        self.add(raw::Rectangle::new())
     }
 
     pub fn finalize(self) -> raw::Document {
@@ -36,13 +41,5 @@ impl Document {
             document.append(Rc::into_inner(elem).unwrap().into_inner());
         });
         document
-    }
-}
-
-impl Default for Document {
-    fn default() -> Self {
-        Self {
-            elements: Vec::new(),
-        }
     }
 }

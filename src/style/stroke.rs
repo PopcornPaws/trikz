@@ -9,10 +9,10 @@ use crate::Scalar;
 const DASH: char = '4';
 const DOT: char = '1';
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Stroke {
     color: Option<Color>,
-    markers: [Option<String>; 3],
+    markers: [Option<usize>; 3],
     opacity: u8,
     width: Scalar,
     style: StrokeStyle,
@@ -94,7 +94,7 @@ impl Stroke {
         }
     }
 
-    pub fn marker_start(mut self, marker_id: String) -> Self {
+    pub fn marker_start(mut self, marker_id: usize) -> Self {
         self.markers[0] = Some(marker_id);
         Self {
             color: self.color,
@@ -105,7 +105,7 @@ impl Stroke {
         }
     }
 
-    pub fn marker_mid(mut self, marker_id: String) -> Self {
+    pub fn marker_mid(mut self, marker_id: usize) -> Self {
         self.markers[1] = Some(marker_id);
         Self {
             color: self.color,
@@ -116,7 +116,7 @@ impl Stroke {
         }
     }
 
-    pub fn marker_end(mut self, marker_id: String) -> Self {
+    pub fn marker_end(mut self, marker_id: usize) -> Self {
         self.markers[2] = Some(marker_id);
         Self {
             color: self.color,
@@ -204,15 +204,15 @@ mod test {
         assert_eq!(stroke.style, StrokeStyle::Dashdotted);
         assert_eq!(stroke.markers, [None, None, None]);
 
-        let sm = "start-marker".to_string();
-        let mm = "mid-marker".to_string();
-        let em = "end-marker".to_string();
+        let sm = 0usize;
+        let mm = 1usize;
+        let em = 2usize;
         let stroke = Stroke::new()
             .dashed()
             .opacity(124)
-            .marker_mid(mm.clone())
-            .marker_end(em.clone())
-            .marker_start(sm.clone())
+            .marker_mid(mm)
+            .marker_end(em)
+            .marker_start(sm)
             .color(Color::Rgb(10, 20, 30));
 
         assert_eq!(stroke.color, Some(Color::Rgb(10, 20, 30)));
@@ -275,11 +275,11 @@ mod test {
             format!("{} {} {} {}", DASH, DOT, DASH, DOT)
         );
 
-        let marker_id = "arrow".to_string();
+        let marker_id = 0usize;
         let stroke = Stroke::new()
             .dashed()
             .opacity(124)
-            .marker_end(marker_id.clone())
+            .marker_end(marker_id)
             .color(Color::Rgb(10, 20, 30));
 
         stroke.to_attributes(&mut attributes);

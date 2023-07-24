@@ -54,6 +54,13 @@ macro_rules! xy {
     };
 }
 
+#[macro_export]
+macro_rules! assert_relative_eq {
+    ($a:expr, $b:expr) => {
+        assert!(($a - $b).norm() < 8.0 * Scalar::EPSILON);
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

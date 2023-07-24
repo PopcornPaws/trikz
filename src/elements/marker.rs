@@ -1,95 +1,50 @@
-use crate::elements::{Path, PathBuilder};
-use crate::svgutils::{keys, Attributes, IntoElem, Marker as SvgMarker, Node, ToAttributes};
+use super::Element;
 use crate::{Scalar, Vector2};
 
-pub struct Marker();
-//{
-//    id: String,
-//    height: Scalar,
-//    width: Scalar,
-//    elem: T,
-//}
+pub struct Marker;
 
-impl<T> Marker<T> {
-    pub fn new(id: String, elem: T) -> Self {
-        Self {
-            id,
-            height: 3.0, // default
-            width: 3.0,  // default
-            orient: None,
-            elem,
-        }
+impl Element<Marker> {
+    pub fn add<T>(id: usize, elem: Element<T>) -> Self {
+        todo!();
+        // TODO Add elem as a child node of this node
+        // and insert default attributes
+        //Self {
+        //    id,
+        //    height: 3.0, // default
+        //    width: 3.0,  // default
+        //    elem,
+        //}
+        //attributes.insert(keys::MARKER_ID.into(), self.id.clone().into());
+        //attributes.insert(keys::MARKER_HEIGHT.into(), self.height.into());
+        //attributes.insert(keys::MARKER_WIDTH.into(), self.width.into());
+        //attributes.insert(keys::MARKER_ORIENT.into(), "auto-start-reverse".into());
     }
 
     pub fn height(self, height: Scalar) -> Self {
-        Self {
-            id: self.id,
-            height,
-            width: self.width,
-            orient: self.orient,
-            elem: self.elem,
-        }
+        todo!();
     }
 
     pub fn width(self, width: Scalar) -> Self {
-        Self {
-            id: self.id,
-            height: self.height,
-            width,
-            orient: self.orient,
-            elem: self.elem,
-        }
+        todo!();
     }
 
-    pub fn orient(self, angle: Scalar) -> Self {
-        Self {
-            id: self.id,
-            height: self.height,
-            width: self.width,
-            orient: Some(angle),
-            elem: self.elem,
-        }
+    pub fn arrow(self) -> Self {
+        todo!();
+        //let elem = PathBuilder::start(Vector2::zeros())
+        //    .line_to(Vector2::new(10.0, 5.0))
+        //    .line_to(Vector2::new(0.0, 10.0))
+        //    .close();
+
+        // TODO Self::add(0, Element::<Path>::new(Rc::new(RefCell::new(elem))))
     }
-}
-
-impl Marker<Path> {
-    pub fn arrow() -> Self {
-        let elem = PathBuilder::start(Vector2::zeros())
-            .line_to(Vector2::new(10.0, 5.0))
-            .line_to(Vector2::new(0.0, 10.0))
-            .close();
-
-        Self::new("arrow".to_string(), elem)
+    pub fn circle(self) -> Self {
+        todo!() // circle markers on a line
+        // TODO Self::add(0, Element::<Circle>::new(Rc::new(RefCell::new(elem))))
     }
-}
 
-impl<T> ToAttributes for Marker<T> {
-    fn to_attributes(&self, attributes: &mut Attributes) {
-        attributes.insert(keys::MARKER_ID.into(), self.id.clone().into());
-        attributes.insert(keys::MARKER_HEIGHT.into(), self.height.into());
-        attributes.insert(keys::MARKER_WIDTH.into(), self.width.into());
-        if let Some(angle) = self.orient {
-            attributes.insert(keys::MARKER_ORIENT.into(), angle.into());
-        } else {
-            attributes.insert(keys::MARKER_ORIENT.into(), "auto-start-reverse".into());
-        }
-    }
-}
-
-impl<T> IntoElem for Marker<T>
-where
-    T: IntoElem,
-    <T as IntoElem>::Elem: Node,
-{
-    type Elem = SvgMarker;
-    type Repr = ();
-    fn into_elem(self) -> Self::Elem {
-        let mut elem = Self::Elem::new();
-        self.to_attributes(elem.get_attributes_mut());
-        // add the child element representing
-        // the marker's shape
-        elem.append(self.elem.into_elem());
-        elem
+    pub fn square(self) -> Self {
+        todo!() // square markers on a line
+        // TODO Self::add(0, Element::<Rectangle>::new(Rc::new(RefCell::new(elem))))
     }
 }
 

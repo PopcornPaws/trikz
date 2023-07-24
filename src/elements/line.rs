@@ -1,5 +1,5 @@
 use super::{Element, ReprT};
-use crate::anchor::{Anchor, AnchorT};
+use crate::anchor::{Anchor, AnchorT, anchor_rectangle};
 use crate::svgutils::keys;
 use crate::{Scalar, Vector2};
 use std::ops::Deref;
@@ -28,10 +28,6 @@ impl Element<Line> {
                 .zip(end.iter().copied()),
         );
         self
-    }
-
-    pub fn marker(self, id: String) -> Self {
-        todo!("{id}")
     }
 
     fn geometry(&self) -> Geometry {
@@ -71,9 +67,11 @@ struct Geometry {
 }
 
 impl AnchorT for Element<Line> {
-    fn anchor(&self, anchor: Anchor) -> Self {
+    fn anchor(&self, anchor: Anchor) -> Vector2 {
         let geometry = self.geometry();
         let origin = (geometry.start + geometry.end) / 2.0;
+        let half = geometry.start - origin;
+        anchor_rectangle(anchor, origin, half[0].abs(), half[1].abs())
     }
 }
 

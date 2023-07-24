@@ -1,11 +1,13 @@
 mod circle;
 mod document;
 mod line;
+mod marker;
 mod rectangle;
 
 use circle::Circle;
 pub use document::Document;
 use line::Line;
+use marker::Marker;
 use rectangle::Rectangle;
 
 use crate::style::Style;
