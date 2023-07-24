@@ -75,14 +75,8 @@ impl AnchorT for Element<Circle> {
             Anchor::Polar { radius, angle } => (radius, angle),
         };
 
-        geometry.origin + polar_coordinates(radius, angle)
+        geometry.origin + crate::polar_coordinates(radius, angle)
     }
-}
-
-fn polar_coordinates(radius: Scalar, angle: Scalar) -> Vector2 {
-    let radians = angle * crate::PI / 180.0;
-    let (s, c) = radians.sin_cos();
-    Vector2::new(radius * c, radius * s)
 }
 
 #[cfg(test)]

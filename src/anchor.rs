@@ -1,5 +1,18 @@
 use crate::{Scalar, Vector2};
 
+pub enum Anchor {
+    Origin,
+    North,
+    NorthEast,
+    East,
+    SouthEast,
+    South,
+    SouthWest,
+    West,
+    NorthWest,
+    Polar { radius: Scalar, angle: Scalar },
+}
+
 // positive X is right (east)
 // positive Y is up (north)
 pub trait AnchorT {
@@ -57,15 +70,39 @@ pub trait AnchorT {
     }
 }
 
-pub enum Anchor {
-    Origin,
-    North,
-    NorthEast,
-    East,
-    SouthEast,
-    South,
-    SouthWest,
-    West,
-    NorthWest,
-    Polar { radius: Scalar, angle: Scalar },
+impl AnchorT for Vector2 {
+    fn anchor(&self, anchor: Anchor) -> Self {
+        let default_radius = 5.0;
+        let (radius, angle) = match anchor {
+            Anchor::Origin => return *self,
+            Anchor::North => (default_radius, 90.0),
+            Anchor::East => (default_radius, 0.0),
+            Anchor::South => (default_radius, -90.0),
+            Anchor::West => (default_radius, 180.0),
+            Anchor::NorthEast => (default_radius, 45.0),
+            Anchor::SouthEast => (default_radius, -45.0),
+            Anchor::SouthWest => (default_radius, -135.0),
+            Anchor::NorthWest => (default_radius, 135.0),
+            Anchor::Polar { radius, angle } => (radius, angle),
+        };
+
+        self + crate::polar_coordinates(radius, angle)
+    }
+}
+
+fn polar_coordinates(radius: Scalar, angle: Scalar) -> Vector2 {
+    let radians = angle * crate::PI / 180.0;
+    let (s, c) = radians.sin_cos();
+    Vector2::new(radius * c, radius * s)
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn polar_coordinates() {
+        assert!((super::polar_coordinates(2.0, 0.0) - 2.0 * Vector2::x()).norm() < 1e-6);
+        assert!((super::polar_coordinates(3.0, 90.0) - 3.0 * Vector2::y()).norm() < 1e-6);
+        assert!((super::polar_coordinates(2.0, 180.0) + 2.0 * Vector2::x()).norm() < 1e-6);
+        assert!((super::polar_coordinates(3.0, -90.0) + 3.0 * Vector2::y()).norm() < 1e-6);
+    }
 }

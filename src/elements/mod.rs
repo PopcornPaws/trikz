@@ -39,19 +39,19 @@ impl<T> Element<T> {
         }
     }
 
-    pub fn insert<V: Into<raw::Value>>(&self, key: String, value: V) {
-        let cloned_ref = Rc::clone(&self.elem);
-        let mut element = cloned_ref.borrow_mut();
-        let attributes = element.get_attributes_mut();
-        attributes.insert(key, value.into());
-    }
-
     /// Clones specifically the underlying data behind an Rc and not the Rc itself.
     pub fn like(self, other: Self) -> Self {
         self.elem
             .as_ref()
             .replace(other.elem.as_ref().borrow().clone());
         self
+    }
+
+    pub fn insert<V: Into<raw::Value>>(&self, key: String, value: V) {
+        let cloned_ref = Rc::clone(&self.elem);
+        let mut element = cloned_ref.borrow_mut();
+        let attributes = element.get_attributes_mut();
+        attributes.insert(key, value.into());
     }
 
     pub fn insert_multi<I, V>(&self, iter: I)
