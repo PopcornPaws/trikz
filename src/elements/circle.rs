@@ -1,9 +1,7 @@
 use super::{Element, ReprT};
-use crate::anchor::{Anchor, AnchorT, anchor_circle};
+use crate::anchor::{anchor_circle, Anchor, AnchorT};
 use crate::svgutils::keys;
 use crate::{Scalar, Vector2};
-use std::ops::Deref;
-use std::str::FromStr;
 
 pub struct Circle;
 
@@ -32,23 +30,9 @@ impl Element<Circle> {
     }
 
     fn geometry(&self) -> Geometry {
-        let element = self.elem.borrow();
-        let attributes = element.get_attributes();
-
-        let x = attributes
-            .get(keys::CX)
-            .and_then(|x| Scalar::from_str(x.deref()).ok())
-            .unwrap_or_default();
-
-        let y = attributes
-            .get(keys::CY)
-            .and_then(|x| Scalar::from_str(x.deref()).ok())
-            .unwrap_or_default();
-
-        let radius = attributes
-            .get(keys::RADIUS)
-            .and_then(|x| Scalar::from_str(x.deref()).ok())
-            .unwrap_or_default();
+        let x = self.get(keys::CX);
+        let y = self.get(keys::CY);
+        let radius = self.get(keys::RADIUS);
 
         Geometry {
             origin: Vector2::new(x, y),
@@ -68,8 +52,8 @@ impl AnchorT for Element<Circle> {
 mod test {
     use super::*;
     use crate::svgutils::raw;
-    use crate::assert_relative_eq;
     use std::cell::RefCell;
+    use std::ops::Deref;
     use std::rc::Rc;
 
     #[test]

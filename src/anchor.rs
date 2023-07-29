@@ -271,8 +271,8 @@ mod test {
         let xshift = -9.0;
         let yshift = 4.0;
         assert_relative_eq!(
-            dbg!(coordinate.below_right(xshift, yshift)),
-            dbg!(coordinate.southeast() + Vector2::new(xshift, -yshift))
+            coordinate.below_right(xshift, yshift),
+            coordinate.southeast() + Vector2::new(xshift, -yshift)
         );
 
         let anchor = Anchor::Polar {

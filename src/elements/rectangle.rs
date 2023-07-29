@@ -2,8 +2,6 @@ use super::{Element, ReprT};
 use crate::anchor::{Anchor, AnchorT, anchor_rectangle};
 use crate::svgutils::keys;
 use crate::{Scalar, Vector2};
-use std::ops::Deref;
-use std::str::FromStr;
 
 pub struct Rectangle;
 
@@ -43,29 +41,10 @@ impl Element<Rectangle> {
     }
 
     fn geometry(&self) -> Geometry {
-        let element = self.elem.borrow();
-        let attributes = element.get_attributes();
-
-        let x = attributes
-            .get(keys::X)
-            .and_then(|x| Scalar::from_str(x.deref()).ok())
-            .unwrap_or_default();
-
-        let y = attributes
-            .get(keys::Y)
-            .and_then(|x| Scalar::from_str(x.deref()).ok())
-            .unwrap_or_default();
-
-        let height = attributes
-            .get(keys::HEIGHT)
-            .and_then(|x| Scalar::from_str(x.deref()).ok())
-            .unwrap_or_default();
-
-        let width = attributes
-            .get(keys::WIDTH)
-            .and_then(|x| Scalar::from_str(x.deref()).ok())
-            .unwrap_or_default();
-
+        let x = self.get(keys::X);
+        let y = self.get(keys::Y);
+        let height = self.get(keys::HEIGHT);
+        let width = self.get(keys::WIDTH);
         Geometry {
             origin: Vector2::new(x, y),
             height,
@@ -92,6 +71,7 @@ mod test {
     use crate::svgutils::raw;
     use std::cell::RefCell;
     use std::rc::Rc;
+    use std::ops::Deref;
 
     #[test]
     fn create_and_modify() {

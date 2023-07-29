@@ -1,9 +1,7 @@
 use super::{Element, ReprT};
-use crate::anchor::{Anchor, AnchorT, anchor_rectangle};
+use crate::anchor::{anchor_rectangle, Anchor, AnchorT};
 use crate::svgutils::keys;
-use crate::{Scalar, Vector2};
-use std::ops::Deref;
-use std::str::FromStr;
+use crate::Vector2;
 
 pub struct Line;
 
@@ -31,28 +29,10 @@ impl Element<Line> {
     }
 
     fn geometry(&self) -> Geometry {
-        let element = self.elem.borrow();
-        let attributes = element.get_attributes();
-
-        let x1 = attributes
-            .get(keys::X1)
-            .and_then(|x| Scalar::from_str(x.deref()).ok())
-            .unwrap_or_default();
-
-        let y1 = attributes
-            .get(keys::Y1)
-            .and_then(|x| Scalar::from_str(x.deref()).ok())
-            .unwrap_or_default();
-
-        let x2 = attributes
-            .get(keys::X2)
-            .and_then(|x| Scalar::from_str(x.deref()).ok())
-            .unwrap_or_default();
-
-        let y2 = attributes
-            .get(keys::Y2)
-            .and_then(|x| Scalar::from_str(x.deref()).ok())
-            .unwrap_or_default();
+        let x1 = self.get(keys::X1);
+        let y1 = self.get(keys::Y1);
+        let x2 = self.get(keys::X2);
+        let y2 = self.get(keys::Y2);
 
         let start = Vector2::new(x1, y1);
         let end = Vector2::new(x2, y2);
@@ -134,9 +114,14 @@ mod test {
         assert_eq!(geometry.end, Vector2::zeros());
 
         elem.insert_multi(
-            [keys::X1.into(), keys::Y1.into(), keys::X2.into(), keys::Y2.into()]
-                .into_iter()
-                .zip([0.0, 1.0, 10.0, 2.0]),
+            [
+                keys::X1.into(),
+                keys::Y1.into(),
+                keys::X2.into(),
+                keys::Y2.into(),
+            ]
+            .into_iter()
+            .zip([0.0, 1.0, 10.0, 2.0]),
         );
 
         let geometry = elem.geometry();
@@ -144,9 +129,14 @@ mod test {
         assert!((geometry.end - Vector2::new(10.0, 2.0)).norm() < 1e-6);
 
         elem.insert_multi(
-            [keys::X1.into(), keys::Y1.into(), keys::X2.into(), keys::Y2.into()]
-                .into_iter()
-                .zip([10.0, -1.0, -5.0, 2.0]),
+            [
+                keys::X1.into(),
+                keys::Y1.into(),
+                keys::X2.into(),
+                keys::Y2.into(),
+            ]
+            .into_iter()
+            .zip([10.0, -1.0, -5.0, 2.0]),
         );
 
         let geometry = elem.geometry();

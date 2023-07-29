@@ -10,11 +10,9 @@ impl Document {
         Self::default()
     }
 
-    fn add<T, E: Deref<Target = raw::Element>>(&mut self, elem: E) -> Element<T> {
-        // cloning should be cheap because the element is empty, but we need it as an Element, not
-        // as a specific type
+    fn add<T, E: Into<raw::Element>>(&mut self, elem: E) -> Element<T> {
         self.elements
-            .push(Rc::new(RefCell::new(elem.deref().clone())));
+            .push(Rc::new(RefCell::new(elem.into())));
         let index = self.elements.len() - 1;
         Element::new(Rc::clone(&self.elements[index]))
     }
@@ -41,5 +39,10 @@ impl Document {
             document.append(Rc::into_inner(elem).unwrap().into_inner());
         });
         document
+    }
+
+    pub fn save<P: AsRef<std::path::Path>>(self, path: P) {
+        let document = self.finalize();
+        svg::save(path, &document).expect("failed to save to svg");
     }
 }

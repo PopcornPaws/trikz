@@ -2,20 +2,26 @@ mod circle;
 mod document;
 mod line;
 mod marker;
+mod path;
 mod rectangle;
 
 use circle::Circle;
 pub use document::Document;
 use line::Line;
 use marker::Marker;
+pub use path::PathBuilder;
 use rectangle::Rectangle;
 
 use crate::style::Style;
-use crate::svgutils::{raw::{self, Node}, ToAttributes};
+use crate::svgutils::{
+    raw::{self, Node},
+    ToAttributes,
+};
 use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::ops::Deref;
 use std::rc::Rc;
+use std::str::FromStr;
 
 type ElemRef = Rc<RefCell<raw::Element>>;
 
@@ -43,10 +49,15 @@ impl<T> Element<T> {
 
     /// Clones specifically the underlying data behind an Rc and not the Rc itself.
     pub fn like(self, other: Self) -> Self {
-        self.elem
-            .as_ref()
-            .replace(other.elem.as_ref().borrow().clone());
+        self.elem.as_ref().replace(other.to_raw());
         self
+    }
+
+    pub fn add_child<C: Node>(&self, child: C) {
+        let cloned_ref = Rc::clone(&self.elem);
+        let mut element = cloned_ref.borrow_mut();
+        let children = element.get_children_mut();
+        children.push(Box::new(child));
     }
 
     pub fn insert<V: Into<raw::Value>>(&self, key: String, value: V) {
@@ -65,6 +76,23 @@ impl<T> Element<T> {
         let mut element = cloned_ref.borrow_mut();
         let attributes = element.get_attributes_mut();
         attributes.extend(iter.map(|(k, v)| (k, v.into())));
+    }
+
+    pub fn to_raw(&self) -> raw::Element {
+        self.elem.as_ref().clone().into_inner()
+    }
+
+    pub fn into_raw(self) -> raw::Element {
+        Rc::into_inner(self.elem).unwrap().into_inner()
+    }
+
+    pub fn get<V: FromStr + Default>(&self, key: &str) -> V {
+        let elem = self.elem.borrow();
+        let attributes = elem.get_attributes();
+        attributes
+            .get(key)
+            .and_then(|x| V::from_str(x.deref()).ok())
+            .unwrap_or_default()
     }
 }
 

@@ -1,8 +1,7 @@
 mod segment;
 
-use crate::style::Stroke;
-use crate::svgutils::{keys, Attributes, IntoElem, Path as SvgPath, ToAttributes, Value};
-use crate::{into_elem, Scalar, Vector2};
+use crate::svgutils::{keys, raw, ToAttributes};
+use crate::{Scalar, Vector2};
 use segment::Segment;
 
 #[derive(Clone, Debug)]
@@ -101,10 +100,17 @@ impl Path {
             .take(index)
             .fold(start, |acc, x| x.cursor(acc).unwrap_or(start))
     }
+
+    pub fn into_raw(self) -> raw::Path {
+        let mut path = raw::Path::new();
+        let attributes = path.get_attributes_mut();
+        self.to_attributes(attributes);
+        path
+    }
 }
 
-impl From<&Path> for Value {
-    fn from(path: &Path) -> Value {
+impl From<&Path> for raw::Value {
+    fn from(path: &Path) -> raw::Value {
         path.segments()
             .iter()
             .map(|x| x.to_string())
@@ -114,11 +120,9 @@ impl From<&Path> for Value {
     }
 }
 
-into_elem!(Path, SvgPath, Stroke);
-
 impl ToAttributes for Path {
-    fn to_attributes(&self, attributes: &mut Attributes) {
-        attributes.insert(keys::PATH.into(), Value::from(self));
+    fn to_attributes(&self, attributes: &mut raw::Attributes) {
+        attributes.insert(keys::PATH.into(), raw::Value::from(self));
     }
 }
 
@@ -208,8 +212,8 @@ mod test {
             .close();
 
         assert_eq!(
-            Value::from(&path).deref(),
-            Value::from("M -1.75 -2.5 v 4 h -12.34 m 1 -1 C 100 0, -0 -200, 0 0 Z").deref(),
+            raw::Value::from(&path).deref(),
+            raw::Value::from("M -1.75 -2.5 v 4 h -12.34 m 1 -1 C 100 0, -0 -200, 0 0 Z").deref(),
         );
     }
 }
