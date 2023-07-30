@@ -1,21 +1,27 @@
-use super::{PathBuilder, Element};
+use super::{Element, PathBuilder};
 use crate::svgutils::{keys, raw};
 use crate::{Scalar, Vector2};
 
 pub struct Marker;
 
-const DEFAULT_HEIGHT: usize = 10;
-const DEFAULT_WIDTH: usize = 10;
+const DEFAULT_HEIGHT: usize = 3;
+const DEFAULT_WIDTH: usize = 3;
 const DEFAULT_ORIENT: &str = "auto-start-reverse";
+const DEFAULT_REF_X: usize = 5;
+const DEFAULT_REF_Y: usize = 5;
+const DEFAULT_VIEW_BOX: &str = "0 0 10 10";
 
 impl Element<Marker> {
     fn with_child(self, id: usize, elem: raw::Element) -> Self {
         self.insert_multi(
             [
-                keys::MARKER_ID.into(),
-                keys::MARKER_HEIGHT.into(),
-                keys::MARKER_WIDTH.into(),
-                keys::MARKER_ORIENT.into(),
+                keys::MARKER_ID,
+                keys::MARKER_HEIGHT,
+                keys::MARKER_WIDTH,
+                keys::MARKER_ORIENT,
+                keys::VIEW_BOX,
+                keys::REF_X,
+                keys::REF_Y,
             ]
             .into_iter()
             .zip([
@@ -23,6 +29,9 @@ impl Element<Marker> {
                 raw::Value::from(DEFAULT_HEIGHT),
                 raw::Value::from(DEFAULT_WIDTH),
                 raw::Value::from(DEFAULT_ORIENT),
+                raw::Value::from(DEFAULT_VIEW_BOX),
+                raw::Value::from(DEFAULT_REF_X),
+                raw::Value::from(DEFAULT_REF_Y),
             ]),
         );
         self.add_child(elem);
@@ -30,12 +39,12 @@ impl Element<Marker> {
     }
 
     pub fn height(self, height: Scalar) -> Self {
-        self.insert(keys::MARKER_HEIGHT.into(), raw::Value::from(height));
+        self.insert(keys::MARKER_HEIGHT, height);
         self
     }
 
     pub fn width(self, width: Scalar) -> Self {
-        self.insert(keys::MARKER_WIDTH.into(), raw::Value::from(width));
+        self.insert(keys::MARKER_WIDTH, width);
         self
     }
 

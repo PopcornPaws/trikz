@@ -11,20 +11,12 @@ impl ReprT for Line {
 
 impl Element<Line> {
     pub fn start(self, start: Vector2) -> Self {
-        self.insert_multi(
-            [keys::X1.into(), keys::Y1.into()]
-                .into_iter()
-                .zip(start.iter().copied()),
-        );
+        self.insert_multi([keys::X1, keys::Y1].into_iter().zip(start.iter().copied()));
         self
     }
 
     pub fn end(self, end: Vector2) -> Self {
-        self.insert_multi(
-            [keys::X2.into(), keys::Y2.into()]
-                .into_iter()
-                .zip(end.iter().copied()),
-        );
+        self.insert_multi([keys::X2, keys::Y2].into_iter().zip(end.iter().copied()));
         self
     }
 
@@ -114,14 +106,9 @@ mod test {
         assert_eq!(geometry.end, Vector2::zeros());
 
         elem.insert_multi(
-            [
-                keys::X1.into(),
-                keys::Y1.into(),
-                keys::X2.into(),
-                keys::Y2.into(),
-            ]
-            .into_iter()
-            .zip([0.0, 1.0, 10.0, 2.0]),
+            [keys::X1, keys::Y1, keys::X2, keys::Y2]
+                .into_iter()
+                .zip([0.0, 1.0, 10.0, 2.0]),
         );
 
         let geometry = elem.geometry();
@@ -129,14 +116,9 @@ mod test {
         assert!((geometry.end - Vector2::new(10.0, 2.0)).norm() < 1e-6);
 
         elem.insert_multi(
-            [
-                keys::X1.into(),
-                keys::Y1.into(),
-                keys::X2.into(),
-                keys::Y2.into(),
-            ]
-            .into_iter()
-            .zip([10.0, -1.0, -5.0, 2.0]),
+            [keys::X1, keys::Y1, keys::X2, keys::Y2]
+                .into_iter()
+                .zip([10.0, -1.0, -5.0, 2.0]),
         );
 
         let geometry = elem.geometry();

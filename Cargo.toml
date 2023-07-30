@@ -7,6 +7,10 @@ license = "MIT"
 repository = "https://github.com/PopcornPaws/trikz"
 description = "Placeholder for trikz, a tikz-like drawing library"
 
+[features]
+pdf = ["svg2pdf"]
+
 [dependencies]
 nalgebra = { version = "0.32", default-features = false, features = ["libm"] }
 svg = "0.13"
+svg2pdf = { version = "0.5", optional = true }

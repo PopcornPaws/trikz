@@ -1,5 +1,5 @@
 use super::{Element, ReprT};
-use crate::anchor::{Anchor, AnchorT, anchor_rectangle};
+use crate::anchor::{anchor_rectangle, Anchor, AnchorT};
 use crate::svgutils::keys;
 use crate::{Scalar, Vector2};
 
@@ -16,37 +16,40 @@ struct Geometry {
 }
 
 impl Element<Rectangle> {
-    pub fn at(self, origin: Vector2) -> Self {
-        self.insert_multi(
-            [keys::X.into(), keys::Y.into()]
-                .into_iter()
-                .zip(origin.iter().copied()),
-        );
+    pub fn at(self, mut origin: Vector2) -> Self {
+        let height: Scalar = self.get(keys::HEIGHT);
+        let width: Scalar = self.get(keys::WIDTH);
+        origin -= Vector2::new(width / 2.0, height / 2.0);
+        self.insert_multi([keys::X, keys::Y].into_iter().zip(origin.iter().copied()));
         self
     }
 
     pub fn width(self, width: Scalar) -> Self {
-        self.insert(keys::WIDTH.into(), width);
+        let x: Scalar = self.get(keys::X);
+        self.insert(keys::X, x - width / 2.0);
+        self.insert(keys::WIDTH, width);
         self
     }
 
     pub fn height(self, height: Scalar) -> Self {
-        self.insert(keys::HEIGHT.into(), height);
+        let y: Scalar = self.get(keys::Y);
+        self.insert(keys::Y, y - height / 2.0);
+        self.insert(keys::HEIGHT, height);
         self
     }
 
     pub fn rounded_corners(self, corner_radius: Scalar) -> Self {
-        self.insert(keys::CORNER_RADIUS.into(), corner_radius);
+        self.insert(keys::CORNER_RADIUS, corner_radius);
         self
     }
 
     fn geometry(&self) -> Geometry {
-        let x = self.get(keys::X);
-        let y = self.get(keys::Y);
+        let x: Scalar = self.get(keys::X);
+        let y: Scalar = self.get(keys::Y);
         let height = self.get(keys::HEIGHT);
         let width = self.get(keys::WIDTH);
         Geometry {
-            origin: Vector2::new(x, y),
+            origin: Vector2::new(x + width / 2.0, y + height / 2.0),
             height,
             width,
         }
@@ -70,8 +73,8 @@ mod test {
     use super::*;
     use crate::svgutils::raw;
     use std::cell::RefCell;
-    use std::rc::Rc;
     use std::ops::Deref;
+    use std::rc::Rc;
 
     #[test]
     fn create_and_modify() {

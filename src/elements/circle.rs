@@ -16,16 +16,12 @@ struct Geometry {
 
 impl Element<Circle> {
     pub fn at(self, origin: Vector2) -> Self {
-        self.insert_multi(
-            [keys::CX.into(), keys::CY.into()]
-                .into_iter()
-                .zip(origin.iter().copied()),
-        );
+        self.insert_multi([keys::CX, keys::CY].into_iter().zip(origin.iter().copied()));
         self
     }
 
     pub fn radius(self, radius: Scalar) -> Self {
-        self.insert(keys::RADIUS.into(), radius);
+        self.insert(keys::RADIUS, radius);
         self
     }
 

@@ -60,22 +60,23 @@ impl<T> Element<T> {
         children.push(Box::new(child));
     }
 
-    pub fn insert<V: Into<raw::Value>>(&self, key: String, value: V) {
+    pub fn insert<K: Into<String>, V: Into<raw::Value>>(&self, key: K, value: V) {
         let cloned_ref = Rc::clone(&self.elem);
         let mut element = cloned_ref.borrow_mut();
         let attributes = element.get_attributes_mut();
-        attributes.insert(key, value.into());
+        attributes.insert(key.into(), value.into());
     }
 
-    pub fn insert_multi<I, V>(&self, iter: I)
+    pub fn insert_multi<I, K, V>(&self, iter: I)
     where
+        K: Into<String>,
         V: Into<raw::Value>,
-        I: Iterator<Item = (String, V)>,
+        I: Iterator<Item = (K, V)>,
     {
         let cloned_ref = Rc::clone(&self.elem);
         let mut element = cloned_ref.borrow_mut();
         let attributes = element.get_attributes_mut();
-        attributes.extend(iter.map(|(k, v)| (k, v.into())));
+        attributes.extend(iter.map(|(k, v)| (k.into(), v.into())));
     }
 
     pub fn to_raw(&self) -> raw::Element {

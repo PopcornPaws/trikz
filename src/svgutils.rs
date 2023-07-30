@@ -46,6 +46,10 @@ pub mod keys {
     pub const MARKER_HEIGHT: &str = "markerHeight";
     pub const MARKER_WIDTH: &str = "markerWidth";
     pub const MARKER_ORIENT: &str = "orient";
+
+    pub const VIEW_BOX: &str = "viewBox";
+    pub const REF_X: &str = "refX";
+    pub const REF_Y: &str = "refY";
 }
 
 pub trait ToAttributes {

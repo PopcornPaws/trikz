@@ -11,8 +11,7 @@ impl Document {
     }
 
     fn add<T, E: Into<raw::Element>>(&mut self, elem: E) -> Element<T> {
-        self.elements
-            .push(Rc::new(RefCell::new(elem.into())));
+        self.elements.push(Rc::new(RefCell::new(elem.into())));
         let index = self.elements.len() - 1;
         Element::new(Rc::clone(&self.elements[index]))
     }
@@ -23,6 +22,10 @@ impl Document {
 
     pub fn line(&mut self) -> Element<Line> {
         self.add(raw::Line::new())
+    }
+
+    pub fn path(&mut self) -> Element<Path> {
+        self.add(raw::Path::new())
     }
 
     pub fn marker(&mut self) -> Element<Marker> {
@@ -44,5 +47,13 @@ impl Document {
     pub fn save<P: AsRef<std::path::Path>>(self, path: P) {
         let document = self.finalize();
         svg::save(path, &document).expect("failed to save to svg");
+    }
+
+    #[cfg(feature = "pdf")]
+    pub fn save_pdf<P: AsRef<std::path::Path>>(self, path: P) {
+        let document = self.finalize();
+        let pdf = svg2pdf::convert_str(&document.to_string(), svg2pdf::Options::default())
+            .expect("invalid svg string");
+        std::fs::write(path, pdf).expect("failed to save to svg");
     }
 }
