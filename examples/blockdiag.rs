@@ -18,8 +18,8 @@ fn main() {
             .width(mm!(1.0))
             .marker_end(arrow_marker.id());
 
-        let rect_style = Style::new().fill(Color::Green).stroke(stroke.clone());
-        let circ_style = Style::new().fill(Color::Blue).stroke(stroke.clone());
+        let rect_style = Style::new().fill(Color::Green);//.stroke(stroke.clone());
+        let circ_style = Style::new().fill(Color::Blue);//.stroke(stroke.clone());
         let arrow_style = Style::new().stroke(arrow);
 
         let controller = document
@@ -65,7 +65,7 @@ fn main() {
             .end(plant.right(2.0 * width))
             .with_style(&arrow_style);
 
-        let _a_fdb = document.path(
+        //let _a_fdb = document.path(
     }
 
     #[cfg(not(feature = "pdf"))]
