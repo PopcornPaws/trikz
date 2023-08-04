@@ -12,7 +12,7 @@ const DOT: char = '1';
 #[derive(Clone, Copy, Debug)]
 pub struct Stroke {
     color: Option<Color>,
-    markers: [Option<usize>; 3],
+    markers: [Option<[u8; 4]>; 3],
     opacity: u8,
     width: Scalar,
     style: StrokeStyle,
@@ -94,8 +94,8 @@ impl Stroke {
         }
     }
 
-    pub fn marker_start(mut self, marker_id: usize) -> Self {
-        self.markers[0] = Some(marker_id);
+    pub fn marker_start(mut self, marker_id: u32) -> Self {
+        self.markers[0] = Some(marker_id.to_le_bytes());
         Self {
             color: self.color,
             markers: self.markers,
@@ -105,8 +105,8 @@ impl Stroke {
         }
     }
 
-    pub fn marker_mid(mut self, marker_id: usize) -> Self {
-        self.markers[1] = Some(marker_id);
+    pub fn marker_mid(mut self, marker_id: u32) -> Self {
+        self.markers[1] = Some(marker_id.to_le_bytes());
         Self {
             color: self.color,
             markers: self.markers,
@@ -116,8 +116,8 @@ impl Stroke {
         }
     }
 
-    pub fn marker_end(mut self, marker_id: usize) -> Self {
-        self.markers[2] = Some(marker_id);
+    pub fn marker_end(mut self, marker_id: u32) -> Self {
+        self.markers[2] = Some(marker_id.to_le_bytes());
         Self {
             color: self.color,
             markers: self.markers,
@@ -144,7 +144,7 @@ impl ToAttributes for Stroke {
                 .zip(keys::MARKERS)
                 .filter_map(|(maybe_marker, key)| maybe_marker.as_ref().map(|marker| (marker, key)))
                 .for_each(|(marker, &key)| {
-                    attributes.insert(key.into(), format!("url(#{})", marker).into());
+                    attributes.insert(key.into(), format!("url(#{})", hex::encode(marker)).into());
                 });
         }
     }

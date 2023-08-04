@@ -11,6 +11,7 @@ description = "Placeholder for trikz, a tikz-like drawing library"
 pdf = ["svg2pdf"]
 
 [dependencies]
+hex = "0.4"
 nalgebra = { version = "0.32", default-features = false, features = ["libm"] }
 svg = "0.13"
 svg2pdf = { version = "0.5", optional = true }

@@ -95,6 +95,16 @@ impl<T> Element<T> {
             .and_then(|x| V::from_str(x.deref()).ok())
             .unwrap_or_default()
     }
+
+    pub fn get_raw(&self, key: &str) -> String {
+        let elem = self.elem.borrow();
+        let attributes = elem.get_attributes();
+        attributes
+            .get(key)
+            .map(|x| x.deref())
+            .unwrap_or_default()
+            .into()
+    }
 }
 
 impl<T: ReprT> Element<T> {

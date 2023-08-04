@@ -24,6 +24,10 @@ impl Document {
         self.add(raw::Line::new())
     }
 
+    //pub fn arrow(&mut self) -> Element<Arrow> {
+    //    self.add(raw::Path::new())
+    //}
+
     //pub fn path(&mut self) -> Element<Path> {
     //    self.add(raw::Path::new())
     //}
@@ -37,7 +41,7 @@ impl Document {
     }
 
     pub fn finalize(self) -> raw::Document {
-        let mut document = raw::Document::new().set("viewBox", "-50 -50 100 100");
+        let mut document = raw::Document::new().set("viewBox", "-400 -50 850 100");
         self.elements.into_iter().for_each(|elem| {
             document.append(Rc::into_inner(elem).unwrap().into_inner());
         });

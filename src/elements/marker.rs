@@ -4,33 +4,29 @@ use crate::{Scalar, Vector2};
 
 pub struct Marker;
 
-const DEFAULT_HEIGHT: usize = 3;
-const DEFAULT_WIDTH: usize = 3;
 const DEFAULT_ORIENT: &str = "auto-start-reverse";
-//const DEFAULT_REF_X: usize = 10;
-//const DEFAULT_REF_Y: usize = 5;
-const DEFAULT_VIEW_BOX: &str = "0 -3 10 10";
+const DEFAULT_REF_X: Scalar = 1.5;
+//const DEFAULT_REF_Y: usize = 10.0;
+const DEFAULT_VIEW_BOX: &str = "0 -5 10 10";
+
+pub const ARROW_ID: [u8; 4] = *b"arow";
 
 impl Element<Marker> {
-    fn with_child(self, id: usize, elem: raw::Element) -> Self {
+    fn with_child(self, id: [u8; 4], elem: raw::Element) -> Self {
         self.insert_multi(
             [
                 keys::MARKER_ID,
-                keys::MARKER_HEIGHT,
-                keys::MARKER_WIDTH,
                 keys::MARKER_ORIENT,
                 keys::VIEW_BOX,
-                //keys::REF_X,
+                keys::REF_X,
                 //keys::REF_Y,
             ]
             .into_iter()
             .zip([
-                raw::Value::from(id),
-                raw::Value::from(DEFAULT_HEIGHT),
-                raw::Value::from(DEFAULT_WIDTH),
+                raw::Value::from(hex::encode(id)),
                 raw::Value::from(DEFAULT_ORIENT),
                 raw::Value::from(DEFAULT_VIEW_BOX),
-                //raw::Value::from(DEFAULT_REF_X),
+                raw::Value::from(DEFAULT_REF_X),
                 //raw::Value::from(DEFAULT_REF_Y),
             ]),
         );
@@ -50,13 +46,13 @@ impl Element<Marker> {
 
     pub fn arrow(self) -> Self {
         let path = PathBuilder::start(Vector2::zeros())
-            .line_to(Vector2::new(0.0, 3.0))
+            .line_to(Vector2::new(0.0, -5.0))
             .line_to(Vector2::new(10.0, 0.0))
-            .line_to(Vector2::new(0.0, -3.0))
+            .line_to(Vector2::new(0.0, 5.0))
             .close()
             .into_raw();
 
-        self.with_child(0, raw::Element::from(path))
+        self.with_child(ARROW_ID, raw::Element::from(path))
     }
 
     pub fn circle(self) -> Self {
@@ -67,8 +63,11 @@ impl Element<Marker> {
         todo!() // square markers on a line
     }
 
-    pub fn id(&self) -> usize {
-        self.get(keys::MARKER_ID)
+    pub fn id(&self) -> u32 {
+        let id = self.get_raw(keys::MARKER_ID);
+        let mut id_bytes = [0u8; 4];
+        hex::decode_to_slice(id, &mut id_bytes).expect("invalid marker id");
+        u32::from_le_bytes(id_bytes)
     }
 }
 

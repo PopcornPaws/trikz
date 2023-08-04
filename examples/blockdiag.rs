@@ -12,14 +12,14 @@ fn main() {
     {
         let arrow_marker = document.marker().arrow();
 
-        let stroke = Stroke::new().color(Color::Black).width(mm!(0.5));
+        let stroke = Stroke::new().color(Color::Black).width(px!(5));
         let arrow = Stroke::new()
-            .color(Color::Black)
-            .width(mm!(1.0))
+            .color(Color::Red)
+            .width(px!(10))
             .marker_end(arrow_marker.id());
 
-        let rect_style = Style::new().fill(Color::Green);//.stroke(stroke.clone());
-        let circ_style = Style::new().fill(Color::Blue);//.stroke(stroke.clone());
+        let rect_style = Style::new().fill(Color::Green).stroke(stroke.clone());
+        let circ_style = Style::new().fill(Color::Blue).stroke(stroke.clone());
         let arrow_style = Style::new().stroke(arrow);
 
         let controller = document
@@ -44,19 +44,19 @@ fn main() {
         let _a_ref = document
             .line()
             .start(sum.left(2.0 * width))
-            .end(sum.west())
+            .end(sum.west() - 10.0 * Vector2::x())
             .with_style(&arrow_style);
 
         let _a_err = document
             .line()
             .start(sum.east())
-            .end(controller.west())
+            .end(controller.west() - 10.0 * Vector2::x())
             .with_style(&arrow_style);
 
         let _a_inp = document
             .line()
             .start(controller.east())
-            .end(plant.west())
+            .end(plant.west() - 10.0 * Vector2::x())
             .with_style(&arrow_style);
 
         let _a_out = document
