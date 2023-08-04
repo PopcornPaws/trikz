@@ -1,16 +1,14 @@
 mod color;
-mod font;
 mod stroke;
 
 pub use color::Color;
-pub use font::Font;
-pub use stroke::Stroke;
 
 use crate::svgutils::{keys, raw::Attributes, ToAttributes};
 
 #[derive(Clone, Debug)]
 pub struct Style<T> {
-    pub fill: Option<Color>, // same for text-based stuff (although color would also be valid there)
+    pub fill: Option<Color>,
+    pub draw: Option<Color>,
     pub repr: Option<T>,
 }
 
