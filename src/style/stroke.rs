@@ -31,8 +31,10 @@ impl Default for Stroke {
 }
 
 impl Stroke {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn draw() -> Self {
+        let mut stroke = Self::default();
+        stroke.color = Some(Color::Black);
+        stroke
     }
     pub fn color(self, color: Color) -> Self {
         Self {

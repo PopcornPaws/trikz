@@ -5,9 +5,12 @@ use crate::{Scalar, Vector2};
 pub struct Marker;
 
 const DEFAULT_ORIENT: &str = "auto-start-reverse";
-const DEFAULT_REF_X: Scalar = 1.5;
+//const DEFAULT_REF_X: Scalar = 1.5;
 //const DEFAULT_REF_Y: usize = 10.0;
 const DEFAULT_VIEW_BOX: &str = "0 -5 10 10";
+
+pub const ARROW_X: Scalar = 10.0;
+pub const ARROW_Y: Scalar = 3.0;
 
 pub const ARROW_ID: [u8; 4] = *b"arow";
 
@@ -18,7 +21,7 @@ impl Element<Marker> {
                 keys::MARKER_ID,
                 keys::MARKER_ORIENT,
                 keys::VIEW_BOX,
-                keys::REF_X,
+                //keys::REF_X,
                 //keys::REF_Y,
             ]
             .into_iter()
@@ -26,7 +29,7 @@ impl Element<Marker> {
                 raw::Value::from(hex::encode(id)),
                 raw::Value::from(DEFAULT_ORIENT),
                 raw::Value::from(DEFAULT_VIEW_BOX),
-                raw::Value::from(DEFAULT_REF_X),
+                //raw::Value::from(DEFAULT_REF_X),
                 //raw::Value::from(DEFAULT_REF_Y),
             ]),
         );
@@ -46,9 +49,9 @@ impl Element<Marker> {
 
     pub fn arrow(self) -> Self {
         let path = PathBuilder::start(Vector2::zeros())
-            .line_to(Vector2::new(0.0, -5.0))
-            .line_to(Vector2::new(10.0, 0.0))
-            .line_to(Vector2::new(0.0, 5.0))
+            .line_to(-ARROW_Y * Vector2::y())
+            .line_to(ARROW_X * Vector2::x())
+            .line_to(ARROW_Y * Vector2::y())
             .close()
             .into_raw();
 

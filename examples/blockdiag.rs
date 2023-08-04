@@ -12,8 +12,8 @@ fn main() {
     {
         let arrow_marker = document.marker().arrow();
 
-        let stroke = Stroke::new().color(Color::Black).width(px!(5));
-        let arrow = Stroke::new()
+        let stroke = Stroke::draw().width(px!(5));
+        let arrow = Stroke::draw()
             .color(Color::Red)
             .width(px!(10))
             .marker_end(arrow_marker.id());
@@ -50,13 +50,13 @@ fn main() {
         let _a_err = document
             .line()
             .start(sum.east())
-            .end(controller.west() - 10.0 * Vector2::x())
+            .end(controller.west())
             .with_style(&arrow_style);
 
         let _a_inp = document
             .line()
             .start(controller.east())
-            .end(plant.west() - 10.0 * Vector2::x())
+            .end(plant.west())
             .with_style(&arrow_style);
 
         let _a_out = document
@@ -65,7 +65,7 @@ fn main() {
             .end(plant.right(2.0 * width))
             .with_style(&arrow_style);
 
-        //let _a_fdb = document.path(
+        //let _a_fdb = document.path()
     }
 
     #[cfg(not(feature = "pdf"))]
