@@ -10,7 +10,7 @@ pub use document::Document;
 use line::Line;
 use marker::Marker;
 pub use path::PathBuilder;
-use path::Path;
+//use path::Path;
 use rectangle::Rectangle;
 
 use crate::style::Style;

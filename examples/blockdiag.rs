@@ -44,7 +44,7 @@ fn main() {
         let _a_ref = document
             .line()
             .start(sum.left(2.0 * width))
-            .end(sum.west() - 10.0 * Vector2::x())
+            .end(sum.west())
             .with_style(&arrow_style);
 
         let _a_err = document

@@ -24,13 +24,9 @@ impl Document {
         self.add(raw::Line::new())
     }
 
-    //pub fn arrow(&mut self) -> Element<Arrow> {
+    //pub fn path(&mut self) -> Element<Path> {
     //    self.add(raw::Path::new())
     //}
-
-    pub fn path(&mut self) -> Element<Path> {
-        self.add(raw::Path::new())
-    }
 
     pub fn marker(&mut self) -> Element<Marker> {
         self.add(raw::Marker::new())

@@ -21,16 +21,14 @@ impl Element<Marker> {
                 keys::MARKER_ID,
                 keys::MARKER_ORIENT,
                 keys::VIEW_BOX,
-                //keys::REF_X,
-                //keys::REF_Y,
+                keys::REF_X,
             ]
             .into_iter()
             .zip([
                 raw::Value::from(hex::encode(id)),
                 raw::Value::from(DEFAULT_ORIENT),
                 raw::Value::from(DEFAULT_VIEW_BOX),
-                //raw::Value::from(DEFAULT_REF_X),
-                //raw::Value::from(DEFAULT_REF_Y),
+                raw::Value::from(ARROW_X),
             ]),
         );
         self.add_child(elem);
