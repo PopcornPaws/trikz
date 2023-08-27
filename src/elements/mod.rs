@@ -1,3 +1,4 @@
+mod arrow;
 mod circle;
 mod document;
 mod line;
