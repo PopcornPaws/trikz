@@ -49,6 +49,8 @@ impl<T: ToAttributes> ToAttributes for Style<T> {
     fn to_attributes(&self, attributes: &mut Attributes) {
         if let Some(color) = self.fill {
             attributes.insert(keys::FILL.into(), color.into());
+        } else {
+            attributes.insert(keys::FILL.into(), "none".into());
         }
         if let Some(repr) = self.repr.as_ref() {
             repr.to_attributes(attributes);

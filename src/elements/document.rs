@@ -1,4 +1,5 @@
 use super::*;
+use super::path::Path;
 
 #[derive(Default)]
 pub struct Document {
@@ -24,9 +25,9 @@ impl Document {
         self.add(raw::Line::new())
     }
 
-    //pub fn path(&mut self) -> Element<Path> {
-    //    self.add(raw::Path::new())
-    //}
+    pub fn path(&mut self) -> Element<Path> {
+        self.add(raw::Path::new())
+    }
 
     pub fn marker(&mut self) -> Element<Marker> {
         self.add(raw::Marker::new())

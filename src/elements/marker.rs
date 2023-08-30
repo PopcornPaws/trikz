@@ -7,10 +7,10 @@ pub struct Marker;
 const DEFAULT_ORIENT: &str = "auto-start-reverse";
 //const DEFAULT_REF_X: Scalar = 1.5;
 //const DEFAULT_REF_Y: usize = 10.0;
-const DEFAULT_VIEW_BOX: &str = "0 -5 10 10";
+const DEFAULT_VIEW_BOX: &str = "0 -5 12 12";
 
-pub const ARROW_X: Scalar = 10.0;
-pub const ARROW_Y: Scalar = 3.0;
+pub const ARROW_X: Scalar = 12.0;
+pub const ARROW_Y: Scalar = 3.5;
 
 pub const ARROW_ID: [u8; 4] = *b"arow";
 
@@ -21,14 +21,12 @@ impl Element<Marker> {
                 keys::MARKER_ID,
                 keys::MARKER_ORIENT,
                 keys::VIEW_BOX,
-                keys::REF_X,
             ]
             .into_iter()
             .zip([
                 raw::Value::from(hex::encode(id)),
                 raw::Value::from(DEFAULT_ORIENT),
                 raw::Value::from(DEFAULT_VIEW_BOX),
-                raw::Value::from(ARROW_X),
             ]),
         );
         self.add_child(elem);

@@ -13,10 +13,7 @@ fn main() {
         let arrow_marker = document.marker().arrow();
 
         let stroke = Stroke::draw().width(px!(5));
-        let arrow = Stroke::draw()
-            .color(Color::Red)
-            .width(px!(10))
-            .marker_end(arrow_marker.id());
+        let arrow = Stroke::draw().width(px!(2.5)).marker_end(arrow_marker.id());
 
         let rect_style = Style::new().fill(Color::Green).stroke(stroke.clone());
         let circ_style = Style::new().fill(Color::Blue).stroke(stroke.clone());
@@ -42,30 +39,29 @@ fn main() {
 
         // arrows
         let _a_ref = document
-            .line()
-            .start(sum.left(2.0 * width))
-            .end(sum.west())
+            .path()
+            .arrow(sum.left(2.0 * width), sum.west())
             .with_style(&arrow_style);
 
         let _a_err = document
-            .line()
-            .start(sum.east())
-            .end(controller.west())
+            .path()
+            .arrow(sum.east(), controller.west())
             .with_style(&arrow_style);
 
         let _a_inp = document
-            .line()
-            .start(controller.east())
-            .end(plant.west())
+            .path()
+            .arrow(controller.east(), plant.west())
             .with_style(&arrow_style);
 
         let _a_out = document
-            .line()
-            .start(plant.east())
-            .end(plant.right(2.0 * width))
+            .path()
+            .arrow(plant.east(), plant.right(2.0 * width))
             .with_style(&arrow_style);
 
-        //let _a_fdb = document.path()
+        let _a_fdb = document
+            .path()
+            .arrow_hvh(plant.right(width), sum.south(), cm!(2))
+            .with_style(&arrow_style);
     }
 
     #[cfg(not(feature = "pdf"))]

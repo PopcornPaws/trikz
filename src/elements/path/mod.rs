@@ -1,11 +1,16 @@
 mod segment;
 
+use crate::elements::ReprT;
 use crate::svgutils::{keys, raw, ToAttributes};
 use crate::{Scalar, Vector2};
 use segment::Segment;
 
 #[derive(Clone, Debug)]
 pub struct Path(Vec<Segment>);
+
+impl ReprT for Path {
+    type Repr = crate::style::Stroke;
+}
 
 pub struct PathBuilder(Vec<Segment>);
 

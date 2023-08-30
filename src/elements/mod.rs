@@ -1,9 +1,9 @@
-mod arrow;
 mod circle;
 mod document;
 mod line;
 mod marker;
 mod path;
+mod path_elem;
 mod rectangle;
 
 use circle::Circle;
@@ -11,7 +11,6 @@ pub use document::Document;
 use line::Line;
 use marker::Marker;
 pub use path::PathBuilder;
-//use path::Path;
 use rectangle::Rectangle;
 
 use crate::style::Style;

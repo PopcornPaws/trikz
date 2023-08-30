@@ -31,6 +31,10 @@ impl Default for Stroke {
 }
 
 impl Stroke {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     pub fn draw() -> Self {
         let mut stroke = Self::default();
         stroke.color = Some(Color::Black);
@@ -206,9 +210,9 @@ mod test {
         assert_eq!(stroke.style, StrokeStyle::Dashdotted);
         assert_eq!(stroke.markers, [None, None, None]);
 
-        let sm = 0usize;
-        let mm = 1usize;
-        let em = 2usize;
+        let sm = 0u32;
+        let mm = 1u32;
+        let em = 2u32;
         let stroke = Stroke::new()
             .dashed()
             .opacity(124)
@@ -221,7 +225,7 @@ mod test {
         assert_eq!(stroke.opacity, 100);
         assert_eq!(stroke.width, 1.0);
         assert_eq!(stroke.style, StrokeStyle::Dashed);
-        assert_eq!(stroke.markers, [Some(sm), Some(mm), Some(em)]);
+        assert_eq!(stroke.markers, [Some(sm.to_le_bytes()), Some(mm.to_le_bytes()), Some(em.to_le_bytes())]);
     }
 
     #[test]
@@ -277,7 +281,7 @@ mod test {
             format!("{} {} {} {}", DASH, DOT, DASH, DOT)
         );
 
-        let marker_id = 0usize;
+        let marker_id = 0u32;
         let stroke = Stroke::new()
             .dashed()
             .opacity(124)
@@ -308,7 +312,7 @@ mod test {
         );
         assert_eq!(
             attributes.get(keys::MARKERS[2]).unwrap().clone().deref(),
-            format!("url(#{})", marker_id)
+            "url(#00000000)"
         );
     }
 }
